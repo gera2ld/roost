@@ -5,7 +5,7 @@ A lightweight, self-hosted personal email client for custom domains: one user, a
 - `worker/` — Cloudflare Email Worker: spools raw EML to R2 and nudges the backend.
 - `server/` — PocketBase used as a Go framework: ingest, sweep, threading, send, API.
 - `web/` — SvelteKit (SPA, adapter-static) + shadcn-svelte PWA, served by the backend.
-- `docs/` — [architecture](docs/architecture.md) and [configuration](docs/configuration.md): every setting, command and scheduled job.
+- `docs/` — [architecture](docs/architecture.md), [decisions](docs/decisions.md) (why it is built this way, such as why not Gmail) and [configuration](docs/configuration.md): every setting, command and scheduled job.
 
 Mail flows Cloudflare Email Routing → Worker → R2 → backend (on a signed nudge, plus a sweep every 5 minutes). Sending goes through Resend; alerts go to Telegram. See [docs/architecture.md](docs/architecture.md) for how the pieces fit.
 

@@ -1,6 +1,6 @@
 # Architecture
 
-Roost receives mail through Cloudflare, stores and indexes it on a backend you run, and sends through Resend. One user, any number of catch-all domains.
+Roost receives mail through Cloudflare, stores and indexes it on a backend you run, and sends through Resend. One user, any number of catch-all domains. The reasons behind these choices are in [decisions.md](decisions.md).
 
 ```mermaid
 flowchart LR

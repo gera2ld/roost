@@ -4,7 +4,7 @@ Roost: a self-hosted personal email client for custom domains (single user, mult
 
 ## Stack
 
-How the pieces fit: [docs/architecture.md](docs/architecture.md). Update it when a flow changes.
+How the pieces fit: [docs/architecture.md](docs/architecture.md). Update it when a flow changes. Why: [docs/decisions.md](docs/decisions.md); record a changed or new design decision there.
 
 - `worker/` — Cloudflare Email Worker (TypeScript, wrangler). Writes raw EML + envelope metadata to R2 (retried twice), then a best-effort nudge to the backend. The R2 write is the only step that must succeed; if it fails, the Worker alerts Telegram directly and throws. No forwarding copy. Keep this code minimal.
 - `server/` — PocketBase (module `ganigeorgiev.com/pocketbase/pocketbase`; the old `github.com/pocketbase` path is frozen, never use it) as a Go framework, not JS hooks. SQLite holds only indexed data; raw EML is written once to `mail/` at its R2 key path. MIME parsing with enmime; R2 via minio-go.
