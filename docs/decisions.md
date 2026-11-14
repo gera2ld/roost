@@ -42,7 +42,7 @@ Why Roost is built the way it is. Each entry gives the choice, the reason, and w
 
 **Resend.** It sends from your domains with SPF and DKIM over a plain HTTPS API, called only from the server. Amazon SES could replace it if volume or cost ever justify the move.
 
-**Roost keeps its own copy of sent mail.** Resend takes JSON, not raw MIME. Roost builds the full message itself and stores it like received mail, so sent mail is searchable, threaded and downloadable through the same paths. Bcc stays in the database only.
+**Roost keeps its own copy of sent mail.** Resend takes JSON, not raw MIME. Roost builds the full message itself and stores it like received mail, so sent mail is searchable, threaded and downloadable through the same paths. Bcc stays in the database only. Resend (through Amazon SES) replaces the Message-ID Roost sets, so the message takes the delivered ID from the `email.sent` webhook; replies quote that one. The raw copy keeps Roost's ID, which is harmless because sent mail is never reparsed. The cost: without the webhook, replies from other mail clients thread only by the subject fallback.
 
 **Never send twice, never look unsent.** Each send uses the record ID and Message-ID as Resend's idempotency key, so a retry after a timeout can't send a duplicate. If Resend accepted a message but saving the result fails, the message is still marked sent.
 

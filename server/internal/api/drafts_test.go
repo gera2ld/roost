@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/base64"
@@ -18,6 +19,7 @@ import (
 
 	"ganigeorgiev.com/pocketbase/pocketbase/core"
 
+	"roost/server/internal/ingest"
 	"roost/server/internal/outbound"
 )
 
@@ -256,6 +258,53 @@ func TestWebhookDeliveryEvents(t *testing.T) {
 	ev.Request, ev.Response = bad, httptest.NewRecorder()
 	if err := handler(ev); err == nil {
 		t.Error("bad signature accepted")
+	}
+}
+
+// Resend delivers with its own Message-ID. A reply to that id which arrives before
+// the webhook is folded into the thread once the webhook reports it, and later
+// replies from Roost reference the delivered id.
+func TestWebhookAdoptsDeliveredMessageID(t *testing.T) {
+	e := newEnv(t)
+	src := e.message("plain-1@example.com")
+	d := e.draft("reply", src.Id)
+	id := d["id"].(string)
+	e.json("POST", "/api/roost/drafts/"+id+"/send", "")
+	const delivered = "0106-abc-000000@ap-northeast-1.amazonses.com"
+
+	reply := filepath.Join(t.TempDir(), "reply.eml")
+	if err := os.WriteFile(reply, []byte("From: Zhang <zhang@example.com>\r\nTo: me@roost.test\r\n"+
+		"Subject: Re: unrelated words\r\nMessage-ID: <their-reply@example.com>\r\n"+
+		"In-Reply-To: <"+delivered+">\r\nReferences: <"+delivered+">\r\n"+
+		"Date: Sat, 14 Nov 2026 11:00:00 +0000\r\n\r\nThanks!\r\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := ingest.ImportFiles(context.Background(), e.app, e.mailDir, []string{reply}, ""); err != nil {
+		t.Fatal(err)
+	}
+	if e.message("their-reply@example.com").GetString("thread") == src.GetString("thread") {
+		t.Fatal("reply joined the thread before its parent's delivered id was known")
+	}
+
+	body := `{"type":"email.sent","created_at":"2026-11-14T10:00:00.000Z","data":{"email_id":"re_1","message_id":"<` + delivered + `>"}}`
+	ev := &core.RequestEvent{App: e.app}
+	ev.Request, ev.Response = signed(t, "evt_sent", body), httptest.NewRecorder()
+	if err := outbound.WebhookHandler(testWebhookSecret)(ev); err != nil {
+		t.Fatal(err)
+	}
+
+	sent, _ := e.app.FindRecordById("messages", id)
+	if sent.GetString("message_id") != delivered {
+		t.Fatalf("message_id = %q, want the delivered id", sent.GetString("message_id"))
+	}
+	if got := e.message("their-reply@example.com").GetString("thread"); got != src.GetString("thread") {
+		t.Errorf("reply thread = %q, want %q", got, src.GetString("thread"))
+	}
+	if n := e.thread(src.GetString("thread")).GetInt("message_count"); n != 3 {
+		t.Errorf("thread message_count = %d, want 3", n)
+	}
+	if next := e.draft("reply", id); next["in_reply_to"] != delivered {
+		t.Errorf("reply to sent: in_reply_to = %v", next["in_reply_to"])
 	}
 }
 

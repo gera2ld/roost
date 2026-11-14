@@ -61,7 +61,7 @@ Drafts are `messages` rows with `direction = outbound`. Sending:
 3. calls Resend with an idempotency key of record ID + Message-ID, so a retry never sends twice;
 4. threads the sent message with the conversation.
 
-Resend webhooks (delivered, bounced, complained) are verified Svix-style and logged in `send_log`. Identities add a display name and a `-- ` signature block to new drafts.
+Resend webhooks (sent, delivered, bounced, complained) are verified Svix-style and logged in `send_log`. Resend delivers through Amazon SES, which replaces the Message-ID Roost sets; the `email.sent` webhook reports the delivered one, and Roost switches the message to it and re-threads, so replies to it join the conversation. Identities add a display name and a `-- ` signature block to new drafts.
 
 ## Alerts and monitoring
 

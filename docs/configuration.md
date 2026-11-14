@@ -84,7 +84,7 @@ The Worker reaches the backend over the public internet, so any HTTPS endpoint w
 ## Resend
 
 - Publish a DMARC record for each sending domain (start with `p=none`), alongside the SPF and DKIM records Resend gives you.
-- Subscribe the webhook to `email.sent`, `email.delivered`, `email.delivery_delayed`, `email.bounced` and `email.complained`.
+- Subscribe the webhook to `email.sent`, `email.delivered`, `email.delivery_delayed`, `email.bounced` and `email.complained`. `email.sent` matters for threading: it carries the Message-ID Resend actually delivered, which recipients reply to.
 - Every domain starts receive-only. Turn sending on per domain in the app's Settings once Resend has verified it.
 
 ## Telegram

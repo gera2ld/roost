@@ -16,6 +16,8 @@ import (
 
 	"ganigeorgiev.com/pocketbase/pocketbase/core"
 	"ganigeorgiev.com/pocketbase/pocketbase/tools/types"
+
+	"roost/server/internal/threading"
 )
 
 // WebhookTolerance bounds clock skew for signed webhook deliveries.
@@ -62,7 +64,10 @@ type webhookEvent struct {
 	CreatedAt string `json:"created_at"`
 	Data      struct {
 		EmailID string `json:"email_id"`
-		Bounce  *struct {
+		// MessageID is the Message-ID header as delivered. Resend (through SES)
+		// replaces the one Roost sets, so recipients reply to this one.
+		MessageID string `json:"message_id"`
+		Bounce    *struct {
 			Message string `json:"message"`
 			Type    string `json:"type"`
 		} `json:"bounce,omitempty"`
@@ -135,6 +140,9 @@ func RecordEvent(app core.App, eventID string, ev webhookEvent, raw []byte) erro
 			ev.Data.EmailID, errText, eventID, detail); err != nil {
 			return err
 		}
+		if err := adoptMessageID(tx, msg, ev.Data.MessageID); err != nil {
+			return err
+		}
 		next, ok := deliveryStatus[ev.Type]
 		if !ok || statusRank[next] <= statusRank[msg.GetString("delivery_status")] {
 			return nil
@@ -150,4 +158,20 @@ func RecordEvent(app core.App, eventID string, ev webhookEvent, raw []byte) erro
 		}
 		return tx.Save(msg)
 	})
+}
+
+// adoptMessageID switches a sent message to the Message-ID it was delivered with,
+// so replies (whose In-Reply-To carries the delivered id) thread with it and later
+// replies from Roost reference it. Re-threading folds in any reply that arrived
+// first. The raw copy keeps the id Roost generated; outbound mail is never reparsed.
+func adoptMessageID(tx core.App, msg *core.Record, delivered string) error {
+	delivered = strings.TrimSpace(strings.TrimSuffix(strings.TrimPrefix(strings.TrimSpace(delivered), "<"), ">"))
+	if delivered == "" || delivered == msg.GetString("message_id") {
+		return nil
+	}
+	msg.Set("message_id", delivered)
+	if err := tx.Save(msg); err != nil {
+		return err
+	}
+	return threading.Assign(tx, msg)
 }
