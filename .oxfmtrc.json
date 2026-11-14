@@ -1,0 +1,14 @@
+{
+	"$schema": "./node_modules/oxfmt/configuration_schema.json",
+	"useTabs": true,
+	"singleQuote": true,
+	"printWidth": 100,
+	"proseWrap": "never",
+	"sortPackageJson": false,
+	"svelte": {},
+	"ignorePatterns": [
+		"worker/worker-configuration.d.ts",
+		"web/src/lib/components/ui/**",
+		"server/internal/store/schema.json"
+	]
+}

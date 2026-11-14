@@ -1,0 +1,18 @@
+{
+	"name": "worker",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"dev": "wrangler dev",
+		"deploy": "wrangler deploy",
+		"types": "wrangler types",
+		"check": "wrangler types && tsc --noEmit",
+		"build": "wrangler deploy --dry-run --outdir dist",
+		"test": "vitest --run"
+	},
+	"devDependencies": {
+		"typescript": "^7.0.2",
+		"vitest": "^4.1.12",
+		"wrangler": "^4.161.0"
+	}
+}

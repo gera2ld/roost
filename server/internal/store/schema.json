@@ -1,0 +1,1612 @@
+[
+  {
+    "fields": [
+      {
+        "autogeneratePattern": "[a-z0-9]{15}",
+        "help": "",
+        "hidden": false,
+        "id": "text3208210256",
+        "max": 15,
+        "min": 15,
+        "name": "id",
+        "pattern": "^[a-z0-9]+$",
+        "presentable": false,
+        "primaryKey": true,
+        "required": true,
+        "system": true,
+        "type": "text"
+      },
+      {
+        "cascadeDelete": true,
+        "collectionId": "roost_messages",
+        "help": "",
+        "hidden": false,
+        "id": "relation3065852031",
+        "maxSelect": 1,
+        "minSelect": 0,
+        "name": "message",
+        "presentable": false,
+        "required": true,
+        "system": false,
+        "type": "relation"
+      },
+      {
+        "autogeneratePattern": "",
+        "help": "",
+        "hidden": false,
+        "id": "text1007413605",
+        "max": 255,
+        "min": 0,
+        "name": "filename",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": false,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "autogeneratePattern": "",
+        "help": "",
+        "hidden": false,
+        "id": "text1102887660",
+        "max": 0,
+        "min": 0,
+        "name": "content_type",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": false,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "help": "",
+        "hidden": false,
+        "id": "number4156564586",
+        "max": null,
+        "min": null,
+        "name": "size",
+        "onlyInt": true,
+        "presentable": false,
+        "required": false,
+        "system": false,
+        "type": "number"
+      },
+      {
+        "autogeneratePattern": "",
+        "help": "",
+        "hidden": false,
+        "id": "text1289964524",
+        "max": 0,
+        "min": 0,
+        "name": "part_id",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": false,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "autogeneratePattern": "",
+        "help": "",
+        "hidden": false,
+        "id": "text2225120237",
+        "max": 0,
+        "min": 0,
+        "name": "content_id",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": false,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "help": "",
+        "hidden": false,
+        "id": "select1280884576",
+        "maxSelect": 1,
+        "name": "disposition",
+        "presentable": false,
+        "required": false,
+        "system": false,
+        "type": "select",
+        "values": [
+          "attachment",
+          "inline"
+        ]
+      },
+      {
+        "hidden": false,
+        "id": "autodate2990389176",
+        "name": "created",
+        "onCreate": true,
+        "onUpdate": false,
+        "presentable": false,
+        "system": false,
+        "type": "autodate"
+      },
+      {
+        "hidden": false,
+        "id": "autodate3332085495",
+        "name": "updated",
+        "onCreate": true,
+        "onUpdate": true,
+        "presentable": false,
+        "system": false,
+        "type": "autodate"
+      }
+    ],
+    "id": "roost_attachmnt",
+    "indexes": [
+      "CREATE INDEX `idx_attachments_message` ON `attachments` (`message`)"
+    ],
+    "listRule": "@request.auth.collectionName = \"users\"",
+    "name": "attachments",
+    "type": "base",
+    "viewRule": "@request.auth.collectionName = \"users\""
+  },
+  {
+    "fields": [
+      {
+        "autogeneratePattern": "[a-z0-9]{15}",
+        "help": "",
+        "hidden": false,
+        "id": "text3208210256",
+        "max": 15,
+        "min": 15,
+        "name": "id",
+        "pattern": "^[a-z0-9]+$",
+        "presentable": false,
+        "primaryKey": true,
+        "required": true,
+        "system": true,
+        "type": "text"
+      },
+      {
+        "autogeneratePattern": "",
+        "help": "",
+        "hidden": false,
+        "id": "text223244161",
+        "max": 0,
+        "min": 0,
+        "name": "address",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": true,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "autogeneratePattern": "",
+        "help": "",
+        "hidden": false,
+        "id": "text1579384326",
+        "max": 0,
+        "min": 0,
+        "name": "name",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": false,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "help": "",
+        "hidden": false,
+        "id": "date3088861482",
+        "max": "",
+        "min": "",
+        "name": "last_seen_at",
+        "presentable": false,
+        "required": false,
+        "system": false,
+        "type": "date"
+      },
+      {
+        "help": "",
+        "hidden": false,
+        "id": "number2055191433",
+        "max": null,
+        "min": null,
+        "name": "message_count",
+        "onlyInt": true,
+        "presentable": false,
+        "required": false,
+        "system": false,
+        "type": "number"
+      },
+      {
+        "hidden": false,
+        "id": "autodate2990389176",
+        "name": "created",
+        "onCreate": true,
+        "onUpdate": false,
+        "presentable": false,
+        "system": false,
+        "type": "autodate"
+      },
+      {
+        "hidden": false,
+        "id": "autodate3332085495",
+        "name": "updated",
+        "onCreate": true,
+        "onUpdate": true,
+        "presentable": false,
+        "system": false,
+        "type": "autodate"
+      }
+    ],
+    "id": "roost_contacts",
+    "indexes": [
+      "CREATE UNIQUE INDEX `idx_contacts_address` ON `contacts` (`address`)"
+    ],
+    "listRule": "@request.auth.collectionName = \"users\"",
+    "name": "contacts",
+    "type": "base",
+    "viewRule": "@request.auth.collectionName = \"users\""
+  },
+  {
+    "fields": [
+      {
+        "autogeneratePattern": "[a-z0-9]{15}",
+        "help": "",
+        "hidden": false,
+        "id": "text3208210256",
+        "max": 15,
+        "min": 15,
+        "name": "id",
+        "pattern": "^[a-z0-9]+$",
+        "presentable": false,
+        "primaryKey": true,
+        "required": true,
+        "system": true,
+        "type": "text"
+      },
+      {
+        "autogeneratePattern": "",
+        "help": "",
+        "hidden": false,
+        "id": "text2812878347",
+        "max": 0,
+        "min": 0,
+        "name": "domain",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": true,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "help": "",
+        "hidden": false,
+        "id": "bool_send_enabled",
+        "name": "send_enabled",
+        "presentable": false,
+        "required": false,
+        "system": false,
+        "type": "bool"
+      },
+      {
+        "hidden": false,
+        "id": "autodate2990389176",
+        "name": "created",
+        "onCreate": true,
+        "onUpdate": false,
+        "presentable": false,
+        "system": false,
+        "type": "autodate"
+      },
+      {
+        "hidden": false,
+        "id": "autodate3332085495",
+        "name": "updated",
+        "onCreate": true,
+        "onUpdate": true,
+        "presentable": false,
+        "system": false,
+        "type": "autodate"
+      }
+    ],
+    "id": "roost_domains",
+    "indexes": [
+      "CREATE UNIQUE INDEX `idx_domains_domain` ON `domains` (`domain`)"
+    ],
+    "listRule": "@request.auth.collectionName = \"users\"",
+    "name": "domains",
+    "type": "base",
+    "viewRule": "@request.auth.collectionName = \"users\""
+  },
+  {
+    "fields": [
+      {
+        "autogeneratePattern": "[a-z0-9]{15}",
+        "help": "",
+        "hidden": false,
+        "id": "text3208210256",
+        "max": 15,
+        "min": 15,
+        "name": "id",
+        "pattern": "^[a-z0-9]+$",
+        "presentable": false,
+        "primaryKey": true,
+        "required": true,
+        "system": true,
+        "type": "text"
+      },
+      {
+        "autogeneratePattern": "",
+        "help": "",
+        "hidden": false,
+        "id": "text_identity_address",
+        "max": 320,
+        "min": 0,
+        "name": "address",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": true,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "autogeneratePattern": "",
+        "help": "",
+        "hidden": false,
+        "id": "text_identity_name",
+        "max": 200,
+        "min": 0,
+        "name": "display_name",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": false,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "autogeneratePattern": "",
+        "help": "",
+        "hidden": false,
+        "id": "text_identity_sig",
+        "max": 4000,
+        "min": 0,
+        "name": "signature",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": false,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "hidden": false,
+        "id": "autodate2990389176",
+        "name": "created",
+        "onCreate": true,
+        "onUpdate": false,
+        "presentable": false,
+        "system": false,
+        "type": "autodate"
+      },
+      {
+        "hidden": false,
+        "id": "autodate3332085495",
+        "name": "updated",
+        "onCreate": true,
+        "onUpdate": true,
+        "presentable": false,
+        "system": false,
+        "type": "autodate"
+      }
+    ],
+    "id": "roost_identities",
+    "indexes": [
+      "CREATE UNIQUE INDEX `idx_identities_address` ON `identities` (`address`)"
+    ],
+    "listRule": "@request.auth.collectionName = \"users\"",
+    "name": "identities",
+    "type": "base",
+    "viewRule": "@request.auth.collectionName = \"users\""
+  },
+  {
+    "fields": [
+      {
+        "autogeneratePattern": "[a-z0-9]{15}",
+        "help": "",
+        "hidden": false,
+        "id": "text3208210256",
+        "max": 15,
+        "min": 15,
+        "name": "id",
+        "pattern": "^[a-z0-9]+$",
+        "presentable": false,
+        "primaryKey": true,
+        "required": true,
+        "system": true,
+        "type": "text"
+      },
+      {
+        "autogeneratePattern": "",
+        "help": "",
+        "hidden": false,
+        "id": "text2324736937",
+        "max": 0,
+        "min": 0,
+        "name": "key",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": true,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "help": "",
+        "hidden": false,
+        "id": "select2063623452",
+        "maxSelect": 1,
+        "name": "status",
+        "presentable": false,
+        "required": true,
+        "system": false,
+        "type": "select",
+        "values": [
+          "stored",
+          "duplicate",
+          "failed"
+        ]
+      },
+      {
+        "cascadeDelete": false,
+        "collectionId": "roost_messages",
+        "help": "",
+        "hidden": false,
+        "id": "relation3065852031",
+        "maxSelect": 1,
+        "minSelect": 0,
+        "name": "message",
+        "presentable": false,
+        "required": false,
+        "system": false,
+        "type": "relation"
+      },
+      {
+        "autogeneratePattern": "",
+        "help": "",
+        "hidden": false,
+        "id": "text1400509225",
+        "max": 0,
+        "min": 0,
+        "name": "message_id",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": false,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "autogeneratePattern": "",
+        "help": "",
+        "hidden": false,
+        "id": "text1574812785",
+        "max": 2000,
+        "min": 0,
+        "name": "error",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": false,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "help": "",
+        "hidden": false,
+        "id": "number3217549156",
+        "max": null,
+        "min": null,
+        "name": "attempts",
+        "onlyInt": true,
+        "presentable": false,
+        "required": false,
+        "system": false,
+        "type": "number"
+      },
+      {
+        "hidden": false,
+        "id": "autodate2990389176",
+        "name": "created",
+        "onCreate": true,
+        "onUpdate": false,
+        "presentable": false,
+        "system": false,
+        "type": "autodate"
+      },
+      {
+        "hidden": false,
+        "id": "autodate3332085495",
+        "name": "updated",
+        "onCreate": true,
+        "onUpdate": true,
+        "presentable": false,
+        "system": false,
+        "type": "autodate"
+      }
+    ],
+    "id": "roost_ingested",
+    "indexes": [
+      "CREATE UNIQUE INDEX `idx_ingested_keys_key` ON `ingested_keys` (`key`)",
+      "CREATE INDEX `idx_ingested_keys_status` ON `ingested_keys` (`status`)"
+    ],
+    "name": "ingested_keys",
+    "type": "base"
+  },
+  {
+    "fields": [
+      {
+        "autogeneratePattern": "[a-z0-9]{15}",
+        "help": "",
+        "hidden": false,
+        "id": "text3208210256",
+        "max": 15,
+        "min": 15,
+        "name": "id",
+        "pattern": "^[a-z0-9]+$",
+        "presentable": false,
+        "primaryKey": true,
+        "required": true,
+        "system": true,
+        "type": "text"
+      },
+      {
+        "autogeneratePattern": "",
+        "help": "",
+        "hidden": false,
+        "id": "text1579384326",
+        "max": 0,
+        "min": 0,
+        "name": "name",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": true,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "autogeneratePattern": "",
+        "help": "",
+        "hidden": false,
+        "id": "text1716930793",
+        "max": 0,
+        "min": 0,
+        "name": "color",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": false,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "hidden": false,
+        "id": "autodate2990389176",
+        "name": "created",
+        "onCreate": true,
+        "onUpdate": false,
+        "presentable": false,
+        "system": false,
+        "type": "autodate"
+      },
+      {
+        "hidden": false,
+        "id": "autodate3332085495",
+        "name": "updated",
+        "onCreate": true,
+        "onUpdate": true,
+        "presentable": false,
+        "system": false,
+        "type": "autodate"
+      }
+    ],
+    "id": "roost_labels",
+    "indexes": [
+      "CREATE UNIQUE INDEX `idx_labels_name` ON `labels` (`name`)"
+    ],
+    "listRule": "@request.auth.collectionName = \"users\"",
+    "name": "labels",
+    "type": "base",
+    "viewRule": "@request.auth.collectionName = \"users\""
+  },
+  {
+    "fields": [
+      {
+        "autogeneratePattern": "[a-z0-9]{15}",
+        "help": "",
+        "hidden": false,
+        "id": "text3208210256",
+        "max": 15,
+        "min": 15,
+        "name": "id",
+        "pattern": "^[a-z0-9]+$",
+        "presentable": false,
+        "primaryKey": true,
+        "required": true,
+        "system": true,
+        "type": "text"
+      },
+      {
+        "autogeneratePattern": "",
+        "help": "",
+        "hidden": false,
+        "id": "text1400509225",
+        "max": 0,
+        "min": 0,
+        "name": "message_id",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": false,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "autogeneratePattern": "",
+        "help": "",
+        "hidden": false,
+        "id": "text2773059511",
+        "max": 0,
+        "min": 0,
+        "name": "in_reply_to",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": false,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "help": "",
+        "hidden": false,
+        "id": "json2669555100",
+        "maxSize": 0,
+        "name": "references",
+        "presentable": false,
+        "required": false,
+        "system": false,
+        "type": "json"
+      },
+      {
+        "autogeneratePattern": "",
+        "help": "",
+        "hidden": false,
+        "id": "text4224597626",
+        "max": 2000,
+        "min": 0,
+        "name": "subject",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": false,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "autogeneratePattern": "",
+        "help": "",
+        "hidden": false,
+        "id": "text2333117486",
+        "max": 0,
+        "min": 0,
+        "name": "from_address",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": false,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "autogeneratePattern": "",
+        "help": "",
+        "hidden": false,
+        "id": "text733324261",
+        "max": 0,
+        "min": 0,
+        "name": "from_name",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": false,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "help": "",
+        "hidden": false,
+        "id": "json3616002756",
+        "maxSize": 0,
+        "name": "to",
+        "presentable": false,
+        "required": false,
+        "system": false,
+        "type": "json"
+      },
+      {
+        "help": "",
+        "hidden": false,
+        "id": "json3685882489",
+        "maxSize": 0,
+        "name": "cc",
+        "presentable": false,
+        "required": false,
+        "system": false,
+        "type": "json"
+      },
+      {
+        "help": "",
+        "hidden": false,
+        "id": "json3803249643",
+        "maxSize": 0,
+        "name": "reply_to",
+        "presentable": false,
+        "required": false,
+        "system": false,
+        "type": "json"
+      },
+      {
+        "help": "",
+        "hidden": false,
+        "id": "json2875858467",
+        "maxSize": 0,
+        "name": "delivered_to",
+        "presentable": false,
+        "required": false,
+        "system": false,
+        "type": "json"
+      },
+      {
+        "autogeneratePattern": "",
+        "help": "",
+        "hidden": false,
+        "id": "text3645009742",
+        "max": 0,
+        "min": 0,
+        "name": "envelope_from",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": false,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "help": "",
+        "hidden": false,
+        "id": "date2531586952",
+        "max": "",
+        "min": "",
+        "name": "sent_at",
+        "presentable": false,
+        "required": false,
+        "system": false,
+        "type": "date"
+      },
+      {
+        "help": "",
+        "hidden": false,
+        "id": "date1833926553",
+        "max": "",
+        "min": "",
+        "name": "received_at",
+        "presentable": false,
+        "required": false,
+        "system": false,
+        "type": "date"
+      },
+      {
+        "help": "",
+        "hidden": false,
+        "id": "select1045090739",
+        "maxSelect": 1,
+        "name": "direction",
+        "presentable": false,
+        "required": true,
+        "system": false,
+        "type": "select",
+        "values": [
+          "inbound",
+          "outbound"
+        ]
+      },
+      {
+        "autogeneratePattern": "",
+        "help": "",
+        "hidden": false,
+        "id": "text3705042311",
+        "max": 10000000,
+        "min": 0,
+        "name": "text_body",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": false,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "help": "",
+        "hidden": false,
+        "id": "select3398884469",
+        "maxSelect": 1,
+        "name": "body_source",
+        "presentable": false,
+        "required": false,
+        "system": false,
+        "type": "select",
+        "values": [
+          "plain",
+          "html",
+          "none"
+        ]
+      },
+      {
+        "autogeneratePattern": "",
+        "help": "",
+        "hidden": false,
+        "id": "text551698341",
+        "max": 0,
+        "min": 0,
+        "name": "raw_path",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": false,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "help": "",
+        "hidden": false,
+        "id": "number3698757824",
+        "max": null,
+        "min": null,
+        "name": "raw_size",
+        "onlyInt": true,
+        "presentable": false,
+        "required": false,
+        "system": false,
+        "type": "number"
+      },
+      {
+        "autogeneratePattern": "",
+        "help": "",
+        "hidden": false,
+        "id": "text3396766656",
+        "max": 0,
+        "min": 0,
+        "name": "r2_key",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": false,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "help": "",
+        "hidden": false,
+        "id": "bool228880198",
+        "name": "is_read",
+        "presentable": false,
+        "required": false,
+        "system": false,
+        "type": "bool"
+      },
+      {
+        "help": "",
+        "hidden": false,
+        "id": "bool2787601568",
+        "name": "is_starred",
+        "presentable": false,
+        "required": false,
+        "system": false,
+        "type": "bool"
+      },
+      {
+        "cascadeDelete": false,
+        "collectionId": "roost_threads",
+        "help": "",
+        "hidden": false,
+        "id": "relation824200323",
+        "maxSelect": 1,
+        "minSelect": 0,
+        "name": "thread",
+        "presentable": false,
+        "required": false,
+        "system": false,
+        "type": "relation"
+      },
+      {
+        "autogeneratePattern": "",
+        "help": "",
+        "hidden": false,
+        "id": "text2795495947",
+        "max": 0,
+        "min": 0,
+        "name": "mailbox",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": false,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "autogeneratePattern": "",
+        "help": "",
+        "hidden": false,
+        "id": "text1011343843",
+        "max": 0,
+        "min": 0,
+        "name": "mailbox_domain",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": false,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "cascadeDelete": false,
+        "collectionId": "roost_labels",
+        "help": "",
+        "hidden": false,
+        "id": "relation3050373649",
+        "maxSelect": 99,
+        "minSelect": 0,
+        "name": "labels",
+        "presentable": false,
+        "required": false,
+        "system": false,
+        "type": "relation"
+      },
+      {
+        "help": "",
+        "hidden": false,
+        "id": "json779734746",
+        "maxSize": 0,
+        "name": "bcc",
+        "presentable": false,
+        "required": false,
+        "system": false,
+        "type": "json"
+      },
+      {
+        "help": "",
+        "hidden": false,
+        "id": "select3839288252",
+        "maxSelect": 1,
+        "name": "send_status",
+        "presentable": false,
+        "required": false,
+        "system": false,
+        "type": "select",
+        "values": [
+          "draft",
+          "sending",
+          "sent",
+          "failed"
+        ]
+      },
+      {
+        "help": "",
+        "hidden": false,
+        "id": "select1695653010",
+        "maxSelect": 1,
+        "name": "delivery_status",
+        "presentable": false,
+        "required": false,
+        "system": false,
+        "type": "select",
+        "values": [
+          "delivered",
+          "delayed",
+          "bounced",
+          "complained"
+        ]
+      },
+      {
+        "autogeneratePattern": "",
+        "help": "",
+        "hidden": false,
+        "id": "text173254826",
+        "max": 0,
+        "min": 0,
+        "name": "provider_id",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": false,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "autogeneratePattern": "",
+        "help": "",
+        "hidden": false,
+        "id": "text884980023",
+        "max": 0,
+        "min": 0,
+        "name": "send_error",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": false,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "help": "",
+        "hidden": false,
+        "id": "json4091147980",
+        "maxSize": 0,
+        "name": "forward_attachments",
+        "presentable": false,
+        "required": false,
+        "system": false,
+        "type": "json"
+      },
+      {
+        "help": "",
+        "hidden": false,
+        "id": "date3346920269",
+        "max": "",
+        "min": "",
+        "name": "delivery_at",
+        "presentable": false,
+        "required": false,
+        "system": false,
+        "type": "date"
+      },
+      {
+        "hidden": false,
+        "id": "autodate2990389176",
+        "name": "created",
+        "onCreate": true,
+        "onUpdate": false,
+        "presentable": false,
+        "system": false,
+        "type": "autodate"
+      },
+      {
+        "hidden": false,
+        "id": "autodate3332085495",
+        "name": "updated",
+        "onCreate": true,
+        "onUpdate": true,
+        "presentable": false,
+        "system": false,
+        "type": "autodate"
+      }
+    ],
+    "id": "roost_messages",
+    "indexes": [
+      "CREATE INDEX `idx_messages_message_id` ON `messages` (`message_id`)",
+      "CREATE INDEX `idx_messages_received_at` ON `messages` (`received_at`)",
+      "CREATE INDEX `idx_messages_thread` ON `messages` (`thread`)",
+      "CREATE INDEX `idx_messages_mailbox_domain` ON `messages` (`mailbox_domain`)",
+      "CREATE INDEX `idx_messages_send_status` ON `messages` (`send_status`)",
+      "CREATE INDEX `idx_messages_provider_id` ON `messages` (`provider_id`)"
+    ],
+    "listRule": "@request.auth.collectionName = \"users\"",
+    "name": "messages",
+    "type": "base",
+    "viewRule": "@request.auth.collectionName = \"users\""
+  },
+  {
+    "fields": [
+      {
+        "autogeneratePattern": "[a-z0-9]{15}",
+        "help": "",
+        "hidden": false,
+        "id": "text3208210256",
+        "max": 15,
+        "min": 15,
+        "name": "id",
+        "pattern": "^[a-z0-9]+$",
+        "presentable": false,
+        "primaryKey": true,
+        "required": true,
+        "system": true,
+        "type": "text"
+      },
+      {
+        "cascadeDelete": true,
+        "collectionId": "roost_messages",
+        "help": "",
+        "hidden": false,
+        "id": "relation3065852031",
+        "maxSelect": 1,
+        "minSelect": 0,
+        "name": "message",
+        "presentable": false,
+        "required": true,
+        "system": false,
+        "type": "relation"
+      },
+      {
+        "help": "",
+        "hidden": false,
+        "id": "select1002749145",
+        "maxSelect": 1,
+        "name": "kind",
+        "presentable": false,
+        "required": false,
+        "system": false,
+        "type": "select",
+        "values": [
+          "attempt",
+          "event"
+        ]
+      },
+      {
+        "autogeneratePattern": "",
+        "help": "",
+        "hidden": false,
+        "id": "text2063623452",
+        "max": 0,
+        "min": 0,
+        "name": "status",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": false,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "autogeneratePattern": "",
+        "help": "",
+        "hidden": false,
+        "id": "text173254826",
+        "max": 0,
+        "min": 0,
+        "name": "provider_id",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": false,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "autogeneratePattern": "",
+        "help": "",
+        "hidden": false,
+        "id": "text1574812785",
+        "max": 0,
+        "min": 0,
+        "name": "error",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": false,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "autogeneratePattern": "",
+        "help": "",
+        "hidden": false,
+        "id": "text1912072331",
+        "max": 0,
+        "min": 0,
+        "name": "event_id",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": false,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "help": "",
+        "hidden": false,
+        "id": "json772177811",
+        "maxSize": 0,
+        "name": "detail",
+        "presentable": false,
+        "required": false,
+        "system": false,
+        "type": "json"
+      },
+      {
+        "hidden": false,
+        "id": "autodate2990389176",
+        "name": "created",
+        "onCreate": true,
+        "onUpdate": false,
+        "presentable": false,
+        "system": false,
+        "type": "autodate"
+      }
+    ],
+    "id": "roost_send_log",
+    "indexes": [
+      "CREATE INDEX `idx_send_log_message` ON `send_log` (`message`)",
+      "CREATE UNIQUE INDEX `idx_send_log_event_id` ON `send_log` (`event_id`) WHERE `event_id` != ''"
+    ],
+    "listRule": "@request.auth.collectionName = \"users\"",
+    "name": "send_log",
+    "type": "base",
+    "viewRule": "@request.auth.collectionName = \"users\""
+  },
+  {
+    "fields": [
+      {
+        "autogeneratePattern": "[a-z0-9]{15}",
+        "help": "",
+        "hidden": false,
+        "id": "text3208210256",
+        "max": 15,
+        "min": 15,
+        "name": "id",
+        "pattern": "^[a-z0-9]+$",
+        "presentable": false,
+        "primaryKey": true,
+        "required": true,
+        "system": true,
+        "type": "text"
+      },
+      {
+        "autogeneratePattern": "",
+        "help": "",
+        "hidden": false,
+        "id": "text4224597626",
+        "max": 2000,
+        "min": 0,
+        "name": "subject",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": false,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "autogeneratePattern": "",
+        "help": "",
+        "hidden": false,
+        "id": "text2459626341",
+        "max": 2000,
+        "min": 0,
+        "name": "subject_key",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": false,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "help": "",
+        "hidden": false,
+        "id": "json1902735506",
+        "maxSize": 0,
+        "name": "participants",
+        "presentable": false,
+        "required": false,
+        "system": false,
+        "type": "json"
+      },
+      {
+        "help": "",
+        "hidden": false,
+        "id": "date373327728",
+        "max": "",
+        "min": "",
+        "name": "latest_at",
+        "presentable": false,
+        "required": false,
+        "system": false,
+        "type": "date"
+      },
+      {
+        "help": "",
+        "hidden": false,
+        "id": "number2055191433",
+        "max": null,
+        "min": null,
+        "name": "message_count",
+        "onlyInt": true,
+        "presentable": false,
+        "required": false,
+        "system": false,
+        "type": "number"
+      },
+      {
+        "help": "",
+        "hidden": false,
+        "id": "number4232961397",
+        "max": null,
+        "min": null,
+        "name": "unread_count",
+        "onlyInt": true,
+        "presentable": false,
+        "required": false,
+        "system": false,
+        "type": "number"
+      },
+      {
+        "autogeneratePattern": "",
+        "help": "",
+        "hidden": false,
+        "id": "text2518453461",
+        "max": 500,
+        "min": 0,
+        "name": "snippet",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": false,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "help": "",
+        "hidden": false,
+        "id": "bool4095221754",
+        "name": "is_archived",
+        "presentable": false,
+        "required": false,
+        "system": false,
+        "type": "bool"
+      },
+      {
+        "help": "",
+        "hidden": false,
+        "id": "date1323523908",
+        "max": "",
+        "min": "",
+        "name": "trashed_at",
+        "presentable": false,
+        "required": false,
+        "system": false,
+        "type": "date"
+      },
+      {
+        "help": "",
+        "hidden": false,
+        "id": "bool3043056146",
+        "name": "has_inbound",
+        "presentable": false,
+        "required": false,
+        "system": false,
+        "type": "bool"
+      },
+      {
+        "help": "",
+        "hidden": false,
+        "id": "bool809545146",
+        "name": "has_outbound",
+        "presentable": false,
+        "required": false,
+        "system": false,
+        "type": "bool"
+      },
+      {
+        "help": "",
+        "hidden": false,
+        "id": "json1034899867",
+        "maxSize": 0,
+        "name": "mailboxes",
+        "presentable": false,
+        "required": false,
+        "system": false,
+        "type": "json"
+      },
+      {
+        "help": "",
+        "hidden": false,
+        "id": "bool3622470323",
+        "name": "has_starred",
+        "presentable": false,
+        "required": false,
+        "system": false,
+        "type": "bool"
+      },
+      {
+        "hidden": false,
+        "id": "autodate2990389176",
+        "name": "created",
+        "onCreate": true,
+        "onUpdate": false,
+        "presentable": false,
+        "system": false,
+        "type": "autodate"
+      },
+      {
+        "hidden": false,
+        "id": "autodate3332085495",
+        "name": "updated",
+        "onCreate": true,
+        "onUpdate": true,
+        "presentable": false,
+        "system": false,
+        "type": "autodate"
+      }
+    ],
+    "id": "roost_threads",
+    "indexes": [
+      "CREATE INDEX `idx_threads_subject_key` ON `threads` (`subject_key`)",
+      "CREATE INDEX `idx_threads_latest_at` ON `threads` (`latest_at`)",
+      "CREATE INDEX `idx_threads_trashed_at` ON `threads` (`trashed_at`)"
+    ],
+    "listRule": "@request.auth.collectionName = \"users\"",
+    "name": "threads",
+    "type": "base",
+    "viewRule": "@request.auth.collectionName = \"users\""
+  },
+  {
+    "authAlert": {
+      "emailTemplate": {
+        "body": "\u003cp\u003eHello,\u003c/p\u003e\n\u003cp\u003eWe noticed a login to your {APP_NAME} account from a new location:\u003c/p\u003e\n\u003cp\u003e\u003cem\u003e{ALERT_INFO}\u003c/em\u003e\u003c/p\u003e\n\u003cp\u003e\u003cstrong\u003eIf this wasn't you, you should immediately change your {APP_NAME} account password to revoke access from all other locations.\u003c/strong\u003e\u003c/p\u003e\n\u003cp\u003eIf this was you, you may disregard this email.\u003c/p\u003e\n\u003cp\u003e\n  Thanks,\u003cbr/\u003e\n  {APP_NAME} team\n\u003c/p\u003e",
+        "subject": "Login from a new location"
+      },
+      "enabled": false
+    },
+    "authRule": "",
+    "authToken": {
+      "duration": 2592000
+    },
+    "confirmEmailChangeTemplate": {
+      "body": "\u003cp\u003eHello,\u003c/p\u003e\n\u003cp\u003eClick on the button below to confirm your new email address.\u003c/p\u003e\n\u003cp\u003e\n  \u003ca class=\"btn\" href=\"{APP_URL}/_/#/auth/confirm-email-change/{TOKEN}\" target=\"_blank\" rel=\"noopener\"\u003eConfirm new email\u003c/a\u003e\n\u003c/p\u003e\n\u003cp\u003e\u003ci\u003eIf you didn't ask to change your email address, please ignore this email.\u003c/i\u003e\u003c/p\u003e\n\u003cp\u003e\n  Thanks,\u003cbr/\u003e\n  {APP_NAME} team\n\u003c/p\u003e",
+      "subject": "Confirm your {APP_NAME} new email address"
+    },
+    "emailChangeToken": {
+      "duration": 1800
+    },
+    "fields": [
+      {
+        "autogeneratePattern": "[a-z0-9]{15}",
+        "help": "",
+        "hidden": false,
+        "id": "text3208210256",
+        "max": 15,
+        "min": 15,
+        "name": "id",
+        "pattern": "^[a-z0-9]+$",
+        "presentable": false,
+        "primaryKey": true,
+        "required": true,
+        "system": true,
+        "type": "text"
+      },
+      {
+        "cost": 0,
+        "help": "",
+        "hidden": true,
+        "id": "password901924565",
+        "max": 0,
+        "min": 8,
+        "name": "password",
+        "pattern": "",
+        "presentable": false,
+        "required": true,
+        "system": true,
+        "type": "password"
+      },
+      {
+        "autogeneratePattern": "[a-zA-Z0-9]{50}",
+        "help": "",
+        "hidden": true,
+        "id": "text2504183744",
+        "max": 60,
+        "min": 30,
+        "name": "tokenKey",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": true,
+        "system": true,
+        "type": "text"
+      },
+      {
+        "exceptDomains": [],
+        "help": "",
+        "hidden": false,
+        "id": "email3885137012",
+        "name": "email",
+        "onlyDomains": [],
+        "presentable": false,
+        "required": true,
+        "system": true,
+        "type": "email"
+      },
+      {
+        "help": "",
+        "hidden": false,
+        "id": "bool1547992806",
+        "name": "emailVisibility",
+        "presentable": false,
+        "required": false,
+        "system": true,
+        "type": "bool"
+      },
+      {
+        "help": "",
+        "hidden": false,
+        "id": "bool256245529",
+        "name": "verified",
+        "presentable": false,
+        "required": false,
+        "system": true,
+        "type": "bool"
+      }
+    ],
+    "fileToken": {
+      "duration": 180
+    },
+    "id": "roost_users",
+    "indexes": [
+      "CREATE UNIQUE INDEX `idx_tokenKey_roost_users` ON `users` (`tokenKey`)",
+      "CREATE UNIQUE INDEX `idx_email_roost_users` ON `users` (`email`) WHERE `email` != ''"
+    ],
+    "listRule": "id = @request.auth.id",
+    "mfa": {
+      "duration": 600,
+      "enabled": false,
+      "rule": ""
+    },
+    "name": "users",
+    "oauth2": {
+      "enabled": false,
+      "mappedFields": {
+        "avatarURL": "",
+        "id": "",
+        "name": "",
+        "username": ""
+      },
+      "providers": []
+    },
+    "otp": {
+      "duration": 180,
+      "emailTemplate": {
+        "body": "\u003cp\u003eHello,\u003c/p\u003e\n\u003cp\u003eYour one-time password is: \u003cstrong\u003e{OTP}\u003c/strong\u003e\u003c/p\u003e\n\u003cp\u003e\u003ci\u003eIf you didn't ask for the one-time password, you can ignore this email.\u003c/i\u003e\u003c/p\u003e\n\u003cp\u003e\n  Thanks,\u003cbr/\u003e\n  {APP_NAME} team\n\u003c/p\u003e",
+        "subject": "OTP for {APP_NAME}"
+      },
+      "enabled": false,
+      "length": 8
+    },
+    "passwordAuth": {
+      "enabled": true,
+      "identityFields": [
+        "email"
+      ]
+    },
+    "passwordResetToken": {
+      "duration": 1800
+    },
+    "resetPasswordTemplate": {
+      "body": "\u003cp\u003eHello,\u003c/p\u003e\n\u003cp\u003eClick on the button below to reset your password.\u003c/p\u003e\n\u003cp\u003e\n  \u003ca class=\"btn\" href=\"{APP_URL}/_/#/auth/confirm-password-reset/{TOKEN}\" target=\"_blank\" rel=\"noopener\"\u003eReset password\u003c/a\u003e\n\u003c/p\u003e\n\u003cp\u003e\u003ci\u003eIf you didn't ask to reset your password, please ignore this email.\u003c/i\u003e\u003c/p\u003e\n\u003cp\u003e\n  Thanks,\u003cbr/\u003e\n  {APP_NAME} team\n\u003c/p\u003e",
+      "subject": "Reset your {APP_NAME} password"
+    },
+    "type": "auth",
+    "verificationTemplate": {
+      "body": "\u003cp\u003eHello,\u003c/p\u003e\n\u003cp\u003eThank you for joining us at {APP_NAME}.\u003c/p\u003e\n\u003cp\u003eClick on the button below to verify your email address.\u003c/p\u003e\n\u003cp\u003e\n  \u003ca class=\"btn\" href=\"{APP_URL}/_/#/auth/confirm-verification/{TOKEN}\" target=\"_blank\" rel=\"noopener\"\u003eVerify\u003c/a\u003e\n\u003c/p\u003e\n\u003cp\u003e\u003ci\u003eIf you didn't recently register, please ignore this email.\u003c/i\u003e\u003c/p\u003e\n\u003cp\u003e\n  Thanks,\u003cbr/\u003e\n  {APP_NAME} team\n\u003c/p\u003e",
+      "subject": "Verify your {APP_NAME} email"
+    },
+    "verificationToken": {
+      "duration": 86400
+    },
+    "viewRule": "id = @request.auth.id"
+  }
+]

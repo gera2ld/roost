@@ -1,0 +1,14 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "roost-inbound",
+	"main": "src/index.ts",
+	"compatibility_date": "2026-10-01",
+	// Raw EML spool. Keys: YYYY/MM/DD/HHMMSS-uuid.eml. Lifecycle expiry is set on the bucket (see docs/configuration.md).
+	"r2_buckets": [{ "binding": "SPOOL", "bucket_name": "roost-spool" }],
+	"vars": {
+		// Backend nudge endpoint (public HTTPS; docs/configuration.md).
+		"NUDGE_URL": "https://roost.example.com/api/roost/nudge",
+	},
+	// Secrets (wrangler secret put): NUDGE_SECRET, ACCESS_CLIENT_ID, ACCESS_CLIENT_SECRET,
+	// TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID (same bot as the backend; alerts when a message cannot be spooled)
+}

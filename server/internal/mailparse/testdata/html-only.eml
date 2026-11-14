@@ -1,0 +1,10 @@
+From: News <news@example.com>
+To: me@roost.test
+Subject: Weekly digest
+Date: Fri, 13 Nov 2026 12:00:00 +0000
+Message-ID: <html-1@example.com>
+MIME-Version: 1.0
+Content-Type: text/html; charset=UTF-8
+
+<html><head><script>alert('x')</script><style>p{color:red}</style></head>
+<body><p>Top story</p><img src="https://tracker.example.com/pixel.gif"><a href="https://example.com/read">Read more</a></body></html>

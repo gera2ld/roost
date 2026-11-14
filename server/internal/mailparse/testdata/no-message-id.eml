@@ -1,0 +1,6 @@
+From: broken sender
+To: me@roost.test
+Subject: No id here
+Date: not a date
+
+Body without headers we expect.

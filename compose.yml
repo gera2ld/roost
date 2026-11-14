@@ -1,0 +1,23 @@
+# Roost backend: API, ingest and the PWA in one container. Put roost.env next to this file
+# (variables: README.md Quick Start, full list in docs/configuration.md) and run `docker compose up -d`.
+services:
+  roost:
+    image: ghcr.io/gera2ld/roost:latest
+    restart: unless-stopped
+    env_file: roost.env
+    ports:
+      # Local only: put an HTTPS reverse proxy in front.
+      - 127.0.0.1:8090:8090
+    volumes:
+      # All state: pb_data/ (SQLite) and mail/ (raw EML). Back this volume up.
+      - roost-data:/data
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -qO- http://127.0.0.1:8090/api/roost/health || exit 1']
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+volumes:
+  roost-data:
+    name: roost-data # fixed name, independent of the compose project

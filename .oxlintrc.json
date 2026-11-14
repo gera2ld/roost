@@ -1,0 +1,21 @@
+{
+	"$schema": "./node_modules/oxlint/configuration_schema.json",
+	"plugins": ["typescript", "unicorn", "oxc"],
+	"categories": {
+		"correctness": "error",
+		"suspicious": "warn"
+	},
+	"rules": {},
+	"env": {
+		"builtin": true,
+		"browser": true,
+		"node": true
+	},
+	"ignorePatterns": [
+		"build/",
+		".svelte-kit/",
+		"dist/",
+		"worker/worker-configuration.d.ts",
+		"web/src/lib/components/ui/**"
+	]
+}

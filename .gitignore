@@ -1,0 +1,18 @@
+# deps / builds
+node_modules/
+.svelte-kit/
+build/
+dist/
+.wrangler/
+# go
+server/roost
+server/pb_data/
+server/mail/
+# local env
+.env
+.env.*
+roost.env
+!.env.example
+.dev.vars
+.DS_Store
+server/pb_public/

@@ -1,0 +1,16 @@
+.git
+**/node_modules
+**/.svelte-kit
+**/build
+**/dist
+**/.wrangler
+server/pb_data
+server/pb_public
+server/mail
+server/roost
+**/.env
+**/.env.*
+**/.dev.vars
+**/.env
+**/.env.*
+**/.dev.vars

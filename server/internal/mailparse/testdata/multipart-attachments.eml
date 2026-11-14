@@ -1,0 +1,43 @@
+From: Sender <sender@example.com>
+To: me@roost.test
+Subject: Report attached
+Date: Fri, 13 Nov 2026 13:00:00 +0000
+Message-ID: <multi-1@example.com>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="outer"
+
+--outer
+Content-Type: multipart/related; boundary="related"
+
+--related
+Content-Type: multipart/alternative; boundary="alt"
+
+--alt
+Content-Type: text/plain; charset=UTF-8
+
+Plain body wins.
+--alt
+Content-Type: text/html; charset=UTF-8
+
+<p>HTML body <img src="cid:logo@x"></p>
+--alt--
+--related
+Content-Type: image/png
+Content-ID: <logo@x>
+Content-Transfer-Encoding: base64
+
+UE5HREFUQQ==
+--related--
+--outer
+Content-Type: application/octet-stream; name="evil.sh"
+Content-Disposition: attachment; filename="../../etc/evil.sh"
+Content-Transfer-Encoding: base64
+
+IyEvYmluL3NoCmVjaG8gaGkK
+--outer
+Content-Type: application/pdf
+Content-Disposition: attachment; filename*=UTF-8''%E6%8A%A5%E5%91%8A.pdf
+Content-Transfer-Encoding: base64
+
+JVBERi0xLjQgZmFrZQ==
+--outer--
