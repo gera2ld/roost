@@ -18,6 +18,8 @@ Why Roost is built the way it is. Each entry gives the choice, the reason, and w
 
 **Search with an FTS5 trigram index.** Chinese and Japanese text has no spaces between words, so word tokenizers miss most searches. Trigrams match any substring of three or more characters; shorter terms fall back to a plain `LIKE`.
 
+**Search queries use `@gera2ld/filter-query`, parsed in the browser.** The search box speaks a field language (`from:pat !is:read (a b)`), parsed by the same library as the owner's other tools so it behaves the same everywhere. Following that library, top-level terms are OR'd and `( … )` groups are AND'd, which changed the old rule that every word must match. The client sends the parsed tree as JSON; the server owns the field list and compiles the tree to SQL, one predicate per message. An unknown field is searched as the literal text `name:value`, because mail is full of colons (URLs, `10:30`, `Re:`) and matching nothing would hide exactly that mail. Drafts are not searchable: search returns threads, and drafts have none.
+
 ## Receiving
 
 **Cloudflare Email Routing and a Worker.** Every domain's catch-all goes to one Worker, so any address on any domain lands in one inbox. The address a message was sent to, which a catch-all or Bcc doesn't reliably put in the headers, is kept from the envelope.

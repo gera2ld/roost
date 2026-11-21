@@ -2,7 +2,9 @@ package ingest
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"slices"
 	"strings"
 	"testing"
 
@@ -223,46 +225,111 @@ func TestDomainsAndContacts(t *testing.T) {
 	}
 }
 
+// search runs a query in the JSON form the web client sends, returning thread
+// ids sorted (order is tested on its own).
+func search(t *testing.T, app core.App, q string) ([]string, error) {
+	t.Helper()
+	var items []store.Query
+	if err := json.Unmarshal([]byte(q), &items); err != nil {
+		t.Fatalf("bad test query %s: %v", q, err)
+	}
+	ids, err := store.SearchThreads(app, items, store.SearchOptions{Limit: 10})
+	slices.Sort(ids)
+	return ids, err
+}
+
 func TestSearch(t *testing.T) {
 	h := newHarness(t)
-	gbk := h.deliver(fixture(t, "gbk.eml"))
-	plain := h.deliver(fixture(t, "plain-utf8.eml"))
-	h.deliver(fixture(t, "html-only.eml"))
+	gbk := h.deliver(fixture(t, "gbk.eml")).GetString("thread")
+	plain := h.deliver(fixture(t, "plain-utf8.eml")).GetString("thread")
+	html := h.deliver(fixture(t, "html-only.eml")).GetString("thread")
+	multi := h.deliver(fixture(t, "multipart-attachments.eml")).GetString("thread")
+	all := []string{gbk, plain, html, multi}
+	slices.Sort(all)
+	sorted := func(ids ...string) []string { slices.Sort(ids); return ids }
 
 	cases := map[string][]string{
-		"下午三":                {gbk.Id},   // CJK substring via trigram
-		"café":               {plain.Id}, // case-insensitive
-		"caf meeting":        {plain.Id}, // multiple terms are ANDed
-		"李四":                 {gbk.Id},   // 2 chars: LIKE fallback on from_name
-		"zhang@example":      {plain.Id}, // sender address
-		"nothing-matches-me": nil,
-		`"; DROP`:            nil, // FTS syntax is neutralized
-		"100%":               nil,
+		`[{"field":null,"query":"下午三"}]`:                {gbk},   // CJK substring via trigram
+		`[{"field":null,"query":"café"}]`:               {plain}, // case-insensitive
+		`[{"field":null,"query":"李四"}]`:                 {gbk},   // 2 chars: LIKE fallback on from_name
+		`[{"field":null,"query":"zhang@example"}]`:      {plain}, // sender address
+		`[{"field":null,"query":"nothing-matches-me"}]`: nil,
+		`[{"field":null,"query":"\"; DROP"}]`:           nil, // FTS syntax is neutralized
+		`[{"field":null,"query":"100%"}]`:               nil,
+		`[{"field":null,"query":""}]`:                   nil, // nothing left: no filter is no result
+		`[]`:                                            nil,
+		`[{"group":[{"field":null,"query":"caf"},{"field":null,"query":"meeting"}]}]`: {plain},             // groups AND
+		`[{"field":null,"query":"meeting"},{"field":null,"query":"digest"}]`:          sorted(plain, html), // top level ORs
+		`[{"group":[{"field":null,"query":"caf"},{"field":null,"query":"digest"}]}]`:  nil,
+		`[{"group":[{"field":null,"query":"meeting"}],"negate":true}]`:                sorted(gbk, html, multi),
+		`[{"field":"subject","query":"meeting"}]`:                                     {plain},
+		`[{"field":"SUBJECT","query":"meeting"}]`:                                     {plain}, // field names ignore case
+		`[{"field":"subject","query":"zhang"}]`:                                       nil,     // only the subject
+		`[{"field":"from","query":"zhang"}]`:                                          {plain},
+		`[{"field":"from","query":"李四"}]`:                                             {gbk},
+		`[{"field":"body","query":"wins"}]`:                                           {multi},
+		`[{"field":"body","query":"meeting"}]`:                                        nil,
+		`[{"field":"to","query":"other@roost"}]`:                                      {plain},
+		`[{"field":"to","query":"Me"}]`:                                               all, // name or address
+		`[{"field":"cc","query":"roost"}]`:                                            nil,
+		`[{"field":"mailbox","query":"me@roost"}]`:                                    all,
+		`[{"field":"domain","query":"@Roost.test"}]`:                                  all,
+		`[{"field":"domain","query":"roost"}]`:                                        nil, // exact, not a substring
+		`[{"field":"has","query":"attachment"}]`:                                      {multi},
+		`[{"field":"has","query":"attachment","negate":true}]`:                        sorted(gbk, plain, html),
+		`[{"field":"filename","query":"evil"}]`:                                       {multi},
+		`[{"field":"is","query":"unread"}]`:                                           all,
+		`[{"field":"is","query":"Starred"}]`:                                          nil,
+		`[{"field":"is","query":"sent"}]`:                                             nil,
+		`[{"field":"label","query":"work"}]`:                                          nil,
+		`[{"field":"after","query":"2000-01-01"}]`:                                    all,
+		`[{"field":"before","query":"2000-01-01"}]`:                                   nil,
+		`[{"field":"after","query":"1000y"}]`:                                         all,
 	}
 	for q, want := range cases {
-		got, err := store.Search(h.app, q, 10)
+		got, err := search(t, h.app, q)
 		if err != nil {
-			t.Errorf("Search(%q): %v", q, err)
+			t.Errorf("search %s: %v", q, err)
 			continue
 		}
 		if fmt.Sprint(got) != fmt.Sprint(want) {
-			t.Errorf("Search(%q) = %v, want %v", q, got, want)
+			t.Errorf("search %s = %v, want %v", q, got, want)
 		}
 	}
 
+	for _, q := range []string{
+		`[{"field":"is","query":"draft"}]`,
+		`[{"field":"has","query":"pdf"}]`,
+		`[{"field":"after","query":"yesterday"}]`,
+	} {
+		if _, err := search(t, h.app, q); !store.IsQueryError(err) {
+			t.Errorf("search %s: err = %v, want a query error", q, err)
+		}
+	}
+
+	// Most recent match first.
+	if ids, err := store.SearchThreads(h.app, []store.Query{{Query: "example"}}, store.SearchOptions{}); err != nil ||
+		len(ids) != 4 || ids[0] != multi {
+		t.Errorf("order = %v, %v; want %s first", ids, err, multi)
+	}
+
 	// The index follows edits and deletes.
-	rec, _ := h.app.FindRecordById("messages", plain.Id)
-	rec.Set("subject", "Renamed zebra subject")
+	rec, _ := h.app.FindFirstRecordByData("messages", "thread", plain)
+	rec.Set("subject", "Renamed zebra subject at 10:30")
 	if err := h.app.Save(rec); err != nil {
 		t.Fatal(err)
 	}
-	if got, _ := store.Search(h.app, "zebra", 10); len(got) != 1 {
+	if got, _ := search(t, h.app, `[{"field":null,"query":"zebra"}]`); len(got) != 1 {
 		t.Errorf("updated subject not indexed: %v", got)
+	}
+	// An unknown field is text with a colon in it: "10:30" parses as 10 → 30.
+	if got, _ := search(t, h.app, `[{"field":"10","query":"30"}]`); len(got) != 1 {
+		t.Errorf("unknown field not searched as text: %v", got)
 	}
 	if err := h.app.Delete(rec); err != nil {
 		t.Fatal(err)
 	}
-	if got, _ := store.Search(h.app, "zebra", 10); len(got) != 0 {
+	if got, _ := search(t, h.app, `[{"field":null,"query":"zebra"}]`); len(got) != 0 {
 		t.Errorf("deleted message still found: %v", got)
 	}
 }
@@ -275,7 +342,7 @@ func TestSyncIsIdempotentAndKeepsIndex(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	if got, _ := store.Search(h.app, "下午三", 10); len(got) != 1 {
+	if got, _ := search(t, h.app, `[{"field":null,"query":"下午三"}]`); len(got) != 1 {
 		t.Errorf("index lost after re-sync: %v", got)
 	}
 }

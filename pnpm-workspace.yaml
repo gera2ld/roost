@@ -5,3 +5,5 @@ allowBuilds:
   esbuild: true
   workerd: true
 engineStrict: true
+minimumReleaseAgeExclude:
+  - '@gera2ld/filter-query@0.2.0'

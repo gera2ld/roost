@@ -5,14 +5,15 @@ package api
 
 import (
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
 	"os"
 	"path/filepath"
-	"slices"
 	"strings"
+	"time"
 
 	"ganigeorgiev.com/pocketbase/pocketbase/apis"
 	"ganigeorgiev.com/pocketbase/pocketbase/core"
@@ -149,34 +150,33 @@ func (h *handlers) messageAction(e *core.RequestEvent) error {
 
 const maxSearchThreads = 50
 
-// search returns threads (not trashed) containing messages that match q,
-// most recent match first.
+// search returns threads (not trashed, unless asked) containing messages that
+// match q, most recent match first. q is the JSON tree that
+// @gera2ld/filter-query parses from the search box; tz is the user's zone,
+// for dates such as after:2026-01-02.
 func (h *handlers) search(e *core.RequestEvent) error {
-	q := strings.TrimSpace(e.Request.URL.Query().Get("q"))
-	if q == "" {
+	params := e.Request.URL.Query()
+	var items []store.Query
+	if q := strings.TrimSpace(params.Get("q")); q != "" {
+		if err := json.Unmarshal([]byte(q), &items); err != nil {
+			return e.BadRequestError("q must be a parsed query", nil)
+		}
+	}
+	if len(items) == 0 {
 		return e.JSON(http.StatusOK, []any{})
 	}
-	ids, err := store.Search(e.App, q, 500)
+	loc, err := time.LoadLocation(params.Get("tz"))
+	if err != nil {
+		loc = time.UTC
+	}
+	ids, err := store.SearchThreads(e.App, items, store.SearchOptions{Limit: maxSearchThreads, Loc: loc})
+	if store.IsQueryError(err) {
+		return e.BadRequestError(err.Error(), nil)
+	}
 	if err != nil {
 		return err
 	}
-	var threadIDs []string
-	if len(ids) > 0 {
-		messages, err := e.App.FindRecordsByIds("messages", ids)
-		if err != nil {
-			return err
-		}
-		byID := make(map[string]string, len(messages))
-		for _, m := range messages {
-			byID[m.Id] = m.GetString("thread")
-		}
-		for _, id := range ids { // keep the search order
-			if t := byID[id]; t != "" && !slices.Contains(threadIDs, t) {
-				threadIDs = append(threadIDs, t)
-			}
-		}
-	}
-	threads, err := e.App.FindRecordsByIds("threads", threadIDs)
+	threads, err := e.App.FindRecordsByIds("threads", ids)
 	if err != nil {
 		return err
 	}
@@ -184,13 +184,10 @@ func (h *handlers) search(e *core.RequestEvent) error {
 	for _, t := range threads {
 		byID[t.Id] = t
 	}
-	out := make([]*core.Record, 0, maxSearchThreads)
-	for _, id := range threadIDs {
-		if t := byID[id]; t != nil && t.GetString("trashed_at") == "" {
+	out := make([]*core.Record, 0, len(ids))
+	for _, id := range ids { // keep the search order
+		if t := byID[id]; t != nil {
 			out = append(out, t)
-			if len(out) == maxSearchThreads {
-				break
-			}
 		}
 	}
 	return e.JSON(http.StatusOK, out)

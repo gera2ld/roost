@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -144,7 +145,7 @@ func TestRequiresAuth(t *testing.T) {
 	thread := e.message("plain-1@example.com").GetString("thread")
 	for _, c := range []struct{ method, path, body string }{
 		{"POST", "/api/roost/threads/" + thread + "/actions", `{"action":"trash"}`},
-		{"GET", "/api/roost/search?q=report", ""},
+		{"GET", "/api/roost/search?q=" + url.QueryEscape(`[{"field":null,"query":"report"}]`), ""},
 		{"GET", "/api/roost/mailboxes", ""},
 	} {
 		if rec := e.do(c.method, c.path, c.body, false); rec.Code != http.StatusUnauthorized {
@@ -225,21 +226,41 @@ func TestMessageStar(t *testing.T) {
 func TestSearchExcludesTrash(t *testing.T) {
 	e := newEnv(t)
 	search := func(q string) []map[string]any {
-		rec := e.do("GET", "/api/roost/search?q="+q, "", true)
+		rec := e.do("GET", "/api/roost/search?tz=Asia/Shanghai&q="+url.QueryEscape(q), "", true)
 		var out []map[string]any
 		if err := json.Unmarshal(rec.Body.Bytes(), &out); err != nil {
-			t.Fatalf("search %q: %d %s", q, rec.Code, rec.Body)
+			t.Fatalf("search %s: %d %s", q, rec.Code, rec.Body)
 		}
 		return out
 	}
-	hits := search("attached")
+	const attached = `[{"field":null,"query":"attached"}]`
+	hits := search(attached)
 	if len(hits) != 1 || hits[0]["subject"] != "Report attached" {
 		t.Fatalf("search = %v", hits)
 	}
 	id := hits[0]["id"].(string)
 	e.do("POST", "/api/roost/threads/"+id+"/actions", `{"action":"trash"}`, true)
-	if hits := search("attached"); len(hits) != 0 {
+	if hits := search(attached); len(hits) != 0 {
 		t.Errorf("trashed thread in search: %v", hits)
+	}
+	if hits := search(`[{"group":[{"field":null,"query":"attached"},{"field":"is","query":"trash"}]}]`); len(hits) != 1 {
+		t.Errorf("is:trash did not find the trashed thread: %v", hits)
+	}
+	if hits := search(`[{"group":[{"field":null,"query":"attached"},{"field":"is","query":"trash","negate":true}]}]`); len(hits) != 0 {
+		t.Errorf("!is:trash found the trashed thread: %v", hits)
+	}
+}
+
+func TestSearchRejectsBadQueries(t *testing.T) {
+	e := newEnv(t)
+	for _, q := range []string{`name:x`, `{"field":"is"}`, `[{"field":"is","query":"nope"}]`} {
+		rec := e.do("GET", "/api/roost/search?q="+url.QueryEscape(q), "", true)
+		if rec.Code != http.StatusBadRequest {
+			t.Errorf("search %s = %d %s, want 400", q, rec.Code, rec.Body)
+		}
+	}
+	if rec := e.do("GET", "/api/roost/search?q=", "", true); rec.Code != 200 || strings.TrimSpace(rec.Body.String()) != "[]" {
+		t.Errorf("empty search = %d %s", rec.Code, rec.Body)
 	}
 }
 

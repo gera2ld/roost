@@ -1,4 +1,5 @@
 import PocketBase, { type RecordModel } from 'pocketbase';
+import { searchTree } from '#lib/mail/search.js';
 
 // Same origin in production (PocketBase serves the app); Vite proxies /api in dev.
 export const pb = new PocketBase('/');
@@ -156,8 +157,9 @@ export function sendDraft(id: string) {
 	return pb.send<Message>(`/api/roost/drafts/${encodeURIComponent(id)}/send`, { method: 'POST' });
 }
 
-export function searchThreads(q: string) {
-	return pb.send<Thread[]>('/api/roost/search', { query: { q } });
+export function searchThreads(text: string) {
+	const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+	return pb.send<Thread[]>('/api/roost/search', { query: { q: searchTree(text), tz } });
 }
 
 export function listMailboxes() {
