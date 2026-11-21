@@ -24,6 +24,25 @@
 	const threadOpen = $derived(Boolean(page.params.thread));
 
 	let menuOpen = $state(false);
+
+	// The desktop sidebar can shrink to icons; remembered per browser.
+	const collapsedKey = 'roost.sidebar.collapsed';
+	let collapsed = $state(readCollapsed());
+	function readCollapsed(): boolean {
+		try {
+			return localStorage.getItem(collapsedKey) === '1';
+		} catch {
+			return false;
+		}
+	}
+	function toggleSidebar() {
+		collapsed = !collapsed;
+		try {
+			localStorage.setItem(collapsedKey, collapsed ? '1' : '0');
+		} catch {
+			// Storage unavailable (private mode): the choice lasts this visit.
+		}
+	}
 	let draft = $state('');
 	$effect(() => {
 		draft = query;
@@ -40,8 +59,8 @@
 </script>
 
 <div class="flex h-dvh overflow-hidden">
-	<aside class="hidden w-60 shrink-0 border-r lg:block">
-		<Sidebar {query} {scope} />
+	<aside class={['hidden shrink-0 border-r lg:block', collapsed ? 'w-14' : 'w-60']}>
+		<Sidebar {query} {scope} {collapsed} ontoggle={toggleSidebar} />
 	</aside>
 
 	<div class="flex min-w-0 flex-1 flex-col">

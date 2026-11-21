@@ -2,6 +2,7 @@
 	import './layout.css';
 	import { ModeWatcher } from 'mode-watcher';
 	import { Toaster } from '#lib/components/ui/sonner/index.js';
+	import * as Tooltip from '#lib/components/ui/tooltip/index.js';
 	import Login from '#lib/components/mail/login.svelte';
 	import { live, session } from '#lib/mail/session.svelte.js';
 	import type { LayoutProps } from './$types';
@@ -27,8 +28,10 @@
 <ModeWatcher />
 <Toaster />
 
-{#if session.user}
-	{@render children()}
-{:else}
-	<Login />
-{/if}
+<Tooltip.Provider delayDuration={300}>
+	{#if session.user}
+		{@render children()}
+	{:else}
+		<Login />
+	{/if}
+</Tooltip.Provider>

@@ -11,6 +11,7 @@
 	import CircleXIcon from '@lucide/svelte/icons/circle-x';
 	import { Button } from '#lib/components/ui/button/index.js';
 	import { Skeleton } from '#lib/components/ui/skeleton/index.js';
+	import IconButton from '#lib/components/mail/icon-button.svelte';
 	import MessageView from '#lib/components/mail/message-view.svelte';
 	import { mailHref, urlQuery } from '#lib/mail/nav.js';
 	import { live } from '#lib/mail/session.svelte.js';
@@ -95,62 +96,34 @@
 		</Button>
 		{#if thread}
 			{#if trashed}
-				<Button
-					variant="ghost"
-					size="sm"
-					aria-label="Restore"
-					onclick={() => act('restore', 'Restored')}
-				>
-					<RotateCcwIcon /><span class="hidden sm:inline">Restore</span>
-				</Button>
-				<Button
-					variant="ghost"
-					size="sm"
-					class="text-destructive"
-					aria-label="Delete forever"
-					onclick={purge}
-				>
-					<CircleXIcon /><span class="hidden sm:inline">Delete forever</span>
-				</Button>
+				<IconButton label="Restore" onclick={() => act('restore', 'Restored')}>
+					<RotateCcwIcon />
+				</IconButton>
+				<IconButton label="Delete forever" class="text-destructive" onclick={purge}>
+					<CircleXIcon />
+				</IconButton>
 			{:else}
 				{#if thread.is_archived}
-					<Button
-						variant="ghost"
-						size="sm"
-						aria-label="Unarchive"
-						onclick={() => act('unarchive', 'Moved to inbox')}
-					>
-						<ArchiveRestoreIcon /><span class="hidden sm:inline">Unarchive</span>
-					</Button>
+					<IconButton label="Move to inbox" onclick={() => act('unarchive', 'Moved to inbox')}>
+						<ArchiveRestoreIcon />
+					</IconButton>
 				{:else}
-					<Button
-						variant="ghost"
-						size="sm"
-						aria-label="Archive"
-						onclick={() => act('archive', 'Archived')}
-					>
-						<ArchiveIcon /><span class="hidden sm:inline">Archive</span>
-					</Button>
+					<IconButton label="Archive" onclick={() => act('archive', 'Archived')}>
+						<ArchiveIcon />
+					</IconButton>
 				{/if}
-				<Button
-					variant="ghost"
-					size="sm"
-					aria-label="Trash"
-					onclick={() => act('trash', 'Moved to trash')}
-				>
-					<TrashIcon /><span class="hidden sm:inline">Trash</span>
-				</Button>
+				<IconButton label="Move to trash" onclick={() => act('trash', 'Moved to trash')}>
+					<TrashIcon />
+				</IconButton>
 			{/if}
-			<Button
-				variant="ghost"
-				size="sm"
+			<IconButton
+				label="Mark unread"
 				class="ml-auto"
-				aria-label="Mark unread"
 				onclick={() => act('unread', 'Marked unread')}
 				disabled={!thread.has_inbound}
 			>
-				<MailIcon /><span class="hidden sm:inline">Mark unread</span>
-			</Button>
+				<MailIcon />
+			</IconButton>
 		{/if}
 	</header>
 
