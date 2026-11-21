@@ -7,16 +7,21 @@
 	import SearchBox from '#lib/components/mail/search-box.svelte';
 	import Sidebar from '#lib/components/mail/sidebar.svelte';
 	import ThreadList from '#lib/components/mail/thread-list.svelte';
-	import { folders, type FolderId } from '#lib/mail/folders.js';
+	import { mailHref, urlQuery } from '#lib/mail/nav.js';
+	import { queryScope, type Scope } from '#lib/mail/search.js';
 	import type { LayoutProps } from './$types';
 
 	let { children }: LayoutProps = $props();
 
-	const folder = $derived(page.params.folder as FolderId);
-	const mailbox = $derived(page.url.searchParams.get('mb') ?? '');
-	const query = $derived(page.url.searchParams.get('q') ?? '');
+	// Mail lists are queries (/mail?q=…); Drafts is the one list that is not.
+	const drafts = $derived(page.route.id === '/(mail)/drafts');
+	const query = $derived(drafts ? '' : urlQuery(page.url));
+	const scope: Scope = $derived(
+		drafts
+			? { folder: 'drafts', mailbox: page.url.searchParams.get('mb') || null }
+			: queryScope(query),
+	);
 	const threadOpen = $derived(Boolean(page.params.thread));
-	const title = $derived(folders.find((f) => f.id === folder)?.label ?? '');
 
 	let menuOpen = $state(false);
 	let draft = $state('');
@@ -25,24 +30,18 @@
 	});
 
 	function search() {
-		const url = new URL(page.url.href);
-		url.pathname = `/${folder}`;
-		if (draft.trim()) url.searchParams.set('q', draft.trim());
-		else url.searchParams.delete('q');
-		goto(url.pathname + url.search);
+		goto(mailHref(draft.trim()));
 	}
 
 	function clearSearch() {
 		draft = '';
-		const url = new URL(page.url.href);
-		url.searchParams.delete('q');
-		goto(url.pathname + url.search);
+		goto(mailHref(''));
 	}
 </script>
 
 <div class="flex h-dvh overflow-hidden">
 	<aside class="hidden w-60 shrink-0 border-r lg:block">
-		<Sidebar {folder} {mailbox} />
+		<Sidebar {query} {scope} />
 	</aside>
 
 	<div class="flex min-w-0 flex-1 flex-col">
@@ -58,7 +57,7 @@
 				</Sheet.Trigger>
 				<Sheet.Content side="left" class="w-64 p-0">
 					<Sheet.Title class="sr-only">Folders</Sheet.Title>
-					<Sidebar {folder} {mailbox} onnavigate={() => (menuOpen = false)} />
+					<Sidebar {query} {scope} onnavigate={() => (menuOpen = false)} />
 				</Sheet.Content>
 			</Sheet.Root>
 			<SearchBox
@@ -76,7 +75,12 @@
 					threadOpen ? 'hidden md:flex' : 'flex flex-1',
 				]}
 			>
-				<ThreadList {folder} {mailbox} {query} selected={page.params.thread ?? ''} />
+				<ThreadList
+					{drafts}
+					{query}
+					mailbox={scope.mailbox ?? ''}
+					selected={page.params.thread ?? ''}
+				/>
 			</section>
 
 			<main class={['min-w-0 flex-1', threadOpen ? 'flex' : 'hidden md:flex']}>

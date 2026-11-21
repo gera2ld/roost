@@ -3,20 +3,24 @@
 	import { Button } from '#lib/components/ui/button/index.js';
 	import { Skeleton } from '#lib/components/ui/skeleton/index.js';
 	import { Badge } from '#lib/components/ui/badge/index.js';
-	import { draftFilter, threadFilter, type FolderId } from '#lib/mail/folders.js';
+	import { draftFilter, folders } from '#lib/mail/folders.js';
 	import { formatList } from '#lib/mail/address.js';
-	import { folderHref } from '#lib/mail/nav.js';
+	import { mailHref } from '#lib/mail/nav.js';
 	import { live } from '#lib/mail/session.svelte.js';
 	import { personLabel, shortDate } from '#lib/mail/text.js';
 	import { pb, searchThreads, type Message, type Thread } from '#lib/pb.js';
 	import { cn } from '#lib/utils.js';
 
+	// Every mail list is a search; Drafts (messages, not threads) is listed apart.
 	let {
-		folder,
+		drafts: draftsView,
 		mailbox,
 		query,
 		selected,
-	}: { folder: FolderId; mailbox: string; query: string; selected: string } = $props();
+	}: { drafts: boolean; mailbox: string; query: string; selected: string } = $props();
+
+	// A bare folder (or no query) is a place, not a search that found nothing.
+	const isFolder = $derived(!query.trim() || folders.some((f) => f.query === query.trim()));
 
 	const perPage = 50;
 	let threads = $state<Thread[]>([]);
@@ -28,7 +32,7 @@
 
 	// Reset paging when the view changes.
 	$effect(() => {
-		void [folder, mailbox, query];
+		void [draftsView, mailbox, query];
 		pages = 1;
 		threads = [];
 		drafts = null;
@@ -37,17 +41,16 @@
 
 	$effect(() => {
 		void live.version;
-		load({ folder, mailbox, query, pages });
+		load({ drafts: draftsView, mailbox, query, pages });
 	});
 
 	let seq = 0;
-	async function load(view: { folder: FolderId; mailbox: string; query: string; pages: number }) {
+	async function load(view: { drafts: boolean; mailbox: string; query: string; pages: number }) {
 		const mine = ++seq;
+		const limit = perPage * view.pages;
 		try {
-			let items: Thread[];
-			let hasMore = false;
-			if (view.folder === 'drafts' && !view.query) {
-				const res = await pb.collection('messages').getList<Message>(1, perPage * view.pages, {
+			if (view.drafts) {
+				const res = await pb.collection('messages').getList<Message>(1, limit, {
 					filter: draftFilter(view.mailbox, pb.filter.bind(pb)),
 					sort: '-updated',
 					skipTotal: true,
@@ -55,29 +58,14 @@
 				if (mine !== seq) return;
 				drafts = res.items;
 				threads = [];
-				more = res.items.length === perPage * view.pages;
-				error = '';
-				return;
-			}
-			if (view.query) {
-				items = await searchThreads(view.query);
+				more = res.items.length === limit;
 			} else {
-				const filter = threadFilter(view.folder, view.mailbox, pb.filter.bind(pb));
-				if (filter === null) {
-					items = [];
-				} else {
-					const res = await pb.collection('threads').getList<Thread>(1, perPage * view.pages, {
-						filter,
-						sort: '-latest_at',
-						skipTotal: true,
-					});
-					items = res.items;
-					hasMore = res.items.length === perPage * view.pages;
-				}
+				const items = await searchThreads(view.query, limit);
+				if (mine !== seq) return;
+				drafts = null;
+				threads = items;
+				more = items.length === limit;
 			}
-			if (mine !== seq) return;
-			threads = items;
-			more = hasMore;
 			error = '';
 		} catch (err) {
 			if (mine === seq) error = err instanceof Error ? err.message : 'Could not load mail';
@@ -134,7 +122,7 @@
 		{/if}
 	{:else if !threads.length}
 		<p class="p-6 text-center text-sm text-muted-foreground">
-			{#if query}No results for “{query}”.{:else}Nothing here.{/if}
+			{#if isFolder}Nothing here.{:else}No mail matches “{query}”.{/if}
 		</p>
 	{:else}
 		<ul>
@@ -142,8 +130,7 @@
 				{@const unread = t.unread_count > 0}
 				<li>
 					<a
-						href={folderHref(folder, mailbox, t.id) +
-							(query ? `${mailbox ? '&' : '?'}q=${encodeURIComponent(query)}` : '')}
+						href={mailHref(query, t.id)}
 						class={cn(
 							'flex flex-col gap-0.5 border-b px-3 py-2.5 hover:bg-muted/60',
 							t.id === selected && 'bg-muted',

@@ -6,4 +6,4 @@ allowBuilds:
   workerd: true
 engineStrict: true
 minimumReleaseAgeExclude:
-  - '@gera2ld/filter-query@0.2.0'
+  - '@gera2ld/filter-query@0.3.0'

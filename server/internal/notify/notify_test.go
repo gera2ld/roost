@@ -31,7 +31,7 @@ func TestFormatOneEscapesUntrustedText(t *testing.T) {
 	if !strings.Contains(text, "&lt;a href=\"javascript:x\"&gt;win&lt;/a&gt; &amp; more") || !strings.Contains(text, "to me@roost.test") {
 		t.Errorf("text = %s", text)
 	}
-	if button == nil || button.URL != "https://mail.example.com/inbox/t1" {
+	if button == nil || button.URL != "https://mail.example.com/mail/t1" {
 		t.Errorf("button = %+v", button)
 	}
 	if _, b := FormatOne(Item{ThreadID: "t1"}, ""); b != nil {

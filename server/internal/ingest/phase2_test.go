@@ -256,35 +256,45 @@ func TestSearch(t *testing.T) {
 		`[{"field":null,"query":"nothing-matches-me"}]`: nil,
 		`[{"field":null,"query":"\"; DROP"}]`:           nil, // FTS syntax is neutralized
 		`[{"field":null,"query":"100%"}]`:               nil,
-		`[{"field":null,"query":""}]`:                   nil, // nothing left: no filter is no result
-		`[]`:                                            nil,
-		`[{"group":[{"field":null,"query":"caf"},{"field":null,"query":"meeting"}]}]`: {plain},             // groups AND
-		`[{"field":null,"query":"meeting"},{"field":null,"query":"digest"}]`:          sorted(plain, html), // top level ORs
-		`[{"group":[{"field":null,"query":"caf"},{"field":null,"query":"digest"}]}]`:  nil,
-		`[{"group":[{"field":null,"query":"meeting"}],"negate":true}]`:                sorted(gbk, html, multi),
-		`[{"field":"subject","query":"meeting"}]`:                                     {plain},
-		`[{"field":"SUBJECT","query":"meeting"}]`:                                     {plain}, // field names ignore case
-		`[{"field":"subject","query":"zhang"}]`:                                       nil,     // only the subject
-		`[{"field":"from","query":"zhang"}]`:                                          {plain},
-		`[{"field":"from","query":"李四"}]`:                                             {gbk},
-		`[{"field":"body","query":"wins"}]`:                                           {multi},
-		`[{"field":"body","query":"meeting"}]`:                                        nil,
-		`[{"field":"to","query":"other@roost"}]`:                                      {plain},
-		`[{"field":"to","query":"Me"}]`:                                               all, // name or address
-		`[{"field":"cc","query":"roost"}]`:                                            nil,
-		`[{"field":"mailbox","query":"me@roost"}]`:                                    all,
-		`[{"field":"domain","query":"@Roost.test"}]`:                                  all,
-		`[{"field":"domain","query":"roost"}]`:                                        nil, // exact, not a substring
-		`[{"field":"has","query":"attachment"}]`:                                      {multi},
-		`[{"field":"has","query":"attachment","negate":true}]`:                        sorted(gbk, plain, html),
-		`[{"field":"filename","query":"evil"}]`:                                       {multi},
-		`[{"field":"is","query":"unread"}]`:                                           all,
-		`[{"field":"is","query":"Starred"}]`:                                          nil,
-		`[{"field":"is","query":"sent"}]`:                                             nil,
-		`[{"field":"label","query":"work"}]`:                                          nil,
-		`[{"field":"after","query":"2000-01-01"}]`:                                    all,
-		`[{"field":"before","query":"2000-01-01"}]`:                                   nil,
-		`[{"field":"after","query":"1000y"}]`:                                         all,
+		`[{"field":null,"query":""}]`:                   nil, // nothing left: a dead filter, not no filter
+		`[]`:                                            all, // an empty query lists all mail
+		`[{"group":[{"field":null,"query":"caf"},{"field":null,"query":"meeting"}]}]`:                          {plain},             // groups AND
+		`[{"field":null,"query":"meeting"},{"field":null,"query":"digest"}]`:                                   nil,                 // top level ANDs
+		`[{"group":[{"field":null,"query":"meeting"},{"field":null,"query":"digest"}],"op":"or"}]`:             sorted(plain, html), // { } ORs
+		`[{"group":[{"field":"from","query":"zhang"},{"field":"from","query":"李四"}],"op":"or","negate":true}]`: sorted(html, multi),
+		`[{"group":[{"field":null,"query":"caf"},{"field":null,"query":"digest"}]}]`:                           nil,
+		`[{"group":[{"field":null,"query":"meeting"}],"negate":true}]`:                                         sorted(gbk, html, multi),
+		`[{"field":"subject","query":"meeting"}]`:                                                              {plain},
+		`[{"field":"SUBJECT","query":"meeting"}]`:                                                              {plain}, // field names ignore case
+		`[{"field":"subject","query":"zhang"}]`:                                                                nil,     // only the subject
+		`[{"field":"from","query":"zhang"}]`:                                                                   {plain},
+		`[{"field":"from","query":"李四"}]`:                                                                      {gbk},
+		`[{"field":"body","query":"wins"}]`:                                                                    {multi},
+		`[{"field":"body","query":"meeting"}]`:                                                                 nil,
+		`[{"field":"to","query":"other@roost"}]`:                                                               {plain},
+		`[{"field":"to","query":"Me"}]`:                                                                        all, // name or address
+		`[{"field":"cc","query":"roost"}]`:                                                                     nil,
+		`[{"field":"mailbox","query":"ME@roost.test"}]`:                                                        all, // exact, ignoring case
+		`[{"field":"mailbox","query":"me@roost"}]`:                                                             nil, // not a substring
+		`[{"field":"mailbox","query":"me@"}]`:                                                                  all, // a local part on any domain
+		`[{"field":"mailbox","query":"e@"}]`:                                                                   nil,
+		`[{"field":"in","query":"inbox"}]`:                                                                     all,
+		`[{"field":"in","query":"inbox","negate":true}]`:                                                       nil,
+		`[{"field":"in","query":"sent"}]`:                                                                      nil,
+		`[{"field":"in","query":"archive"}]`:                                                                   nil,
+		`[{"field":"in","query":"trash"}]`:                                                                     nil,
+		`[{"field":"domain","query":"@Roost.test"}]`:                                                           all,
+		`[{"field":"domain","query":"roost"}]`:                                                                 nil, // exact, not a substring
+		`[{"field":"has","query":"attachment"}]`:                                                               {multi},
+		`[{"field":"has","query":"attachment","negate":true}]`:                                                 sorted(gbk, plain, html),
+		`[{"field":"filename","query":"evil"}]`:                                                                {multi},
+		`[{"field":"is","query":"unread"}]`:                                                                    all,
+		`[{"field":"is","query":"Starred"}]`:                                                                   nil,
+		`[{"field":"is","query":"sent"}]`:                                                                      nil,
+		`[{"field":"label","query":"work"}]`:                                                                   nil,
+		`[{"field":"after","query":"2000-01-01"}]`:                                                             all,
+		`[{"field":"before","query":"2000-01-01"}]`:                                                            nil,
+		`[{"field":"after","query":"1000y"}]`:                                                                  all,
 	}
 	for q, want := range cases {
 		got, err := search(t, h.app, q)
@@ -299,6 +309,7 @@ func TestSearch(t *testing.T) {
 
 	for _, q := range []string{
 		`[{"field":"is","query":"draft"}]`,
+		`[{"field":"in","query":"drafts"}]`,
 		`[{"field":"has","query":"pdf"}]`,
 		`[{"field":"after","query":"yesterday"}]`,
 	} {

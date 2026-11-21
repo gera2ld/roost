@@ -12,8 +12,7 @@
 	import { Button } from '#lib/components/ui/button/index.js';
 	import { Skeleton } from '#lib/components/ui/skeleton/index.js';
 	import MessageView from '#lib/components/mail/message-view.svelte';
-	import type { FolderId } from '#lib/mail/folders.js';
-	import { folderHref } from '#lib/mail/nav.js';
+	import { mailHref, urlQuery } from '#lib/mail/nav.js';
 	import { live } from '#lib/mail/session.svelte.js';
 	import {
 		pb,
@@ -24,14 +23,8 @@
 		type ThreadAction,
 	} from '#lib/pb.js';
 
-	const folder = $derived(page.params.folder as FolderId);
 	const id = $derived(page.params.thread ?? '');
-	const mailbox = $derived(page.url.searchParams.get('mb') ?? '');
-	const back = $derived.by(() => {
-		const q = page.url.searchParams.get('q');
-		const href = folderHref(folder, mailbox);
-		return q ? `${href}${mailbox ? '&' : '?'}q=${encodeURIComponent(q)}` : href;
-	});
+	const back = $derived(mailHref(urlQuery(page.url)));
 
 	let thread = $state<Thread | null>(null);
 	let messages = $state<Message[]>([]);

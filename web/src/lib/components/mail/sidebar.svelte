@@ -12,16 +12,30 @@
 	import { Button } from '#lib/components/ui/button/index.js';
 	import { Separator } from '#lib/components/ui/separator/index.js';
 	import { folders, type FolderId } from '#lib/mail/folders.js';
-	import { folderHref } from '#lib/mail/nav.js';
+	import { draftsHref, mailHref } from '#lib/mail/nav.js';
+	import { withScope, type Scope } from '#lib/mail/search.js';
 	import { live, session } from '#lib/mail/session.svelte.js';
 	import { listMailboxes, type Mailbox } from '#lib/pb.js';
 	import { cn } from '#lib/utils.js';
 
-	let {
-		folder,
-		mailbox,
-		onnavigate,
-	}: { folder: FolderId; mailbox: string; onnavigate?: () => void } = $props();
+	// Every entry is a query (Drafts aside): a link swaps its folder or mailbox
+	// term in the current query and keeps the rest. Highlighting follows the
+	// query (scope), at best effort.
+	let { query, scope, onnavigate }: { query: string; scope: Scope; onnavigate?: () => void } =
+		$props();
+
+	const drafts = $derived(scope.folder === 'drafts');
+	// On Drafts there is no query; keep its mailbox when leaving for a folder.
+	const base = $derived(drafts ? withScope('', { mailbox: scope.mailbox }) : query);
+
+	function folderLink(id: FolderId): string {
+		if (id === 'drafts') return draftsHref(scope.mailbox ?? '');
+		return mailHref(withScope(base, { folder: id }));
+	}
+
+	function mailboxLink(mailbox: string | null): string {
+		return drafts ? draftsHref(mailbox ?? '') : mailHref(withScope(query, { mailbox }));
+	}
 
 	const icons = {
 		inbox: InboxIcon,
@@ -72,9 +86,9 @@
 	{#each folders as f (f.id)}
 		{@const Icon = icons[f.id]}
 		<a
-			href={folderHref(f.id, mailbox)}
-			class={itemClass(f.id === folder)}
-			aria-current={f.id === folder ? 'page' : undefined}
+			href={folderLink(f.id)}
+			class={itemClass(f.id === scope.folder)}
+			aria-current={f.id === scope.folder ? 'page' : undefined}
 			onclick={onnavigate}
 		>
 			<Icon class="size-4 text-muted-foreground" />
@@ -84,11 +98,13 @@
 
 	{#if domains.length}
 		<Separator class="my-2" />
-		<a href={folderHref(folder)} class={itemClass(!mailbox)} onclick={onnavigate}>All mailboxes</a>
+		<a href={mailboxLink(null)} class={itemClass(!scope.mailbox)} onclick={onnavigate}
+			>All mailboxes</a
+		>
 		{#each domains as [domain, d] (domain)}
 			<a
-				href={folderHref(folder, '@' + domain)}
-				class={itemClass(mailbox === '@' + domain)}
+				href={mailboxLink('@' + domain)}
+				class={itemClass(scope.mailbox === '@' + domain)}
 				onclick={onnavigate}
 			>
 				<span class="truncate">@{domain}</span>
@@ -96,8 +112,8 @@
 			</a>
 			{#each d.boxes as b (b.address)}
 				<a
-					href={folderHref(folder, b.address)}
-					class={cn(itemClass(mailbox === b.address), 'pl-5 text-muted-foreground')}
+					href={mailboxLink(b.address)}
+					class={cn(itemClass(scope.mailbox === b.address), 'pl-5 text-muted-foreground')}
 					onclick={onnavigate}
 				>
 					<span class="truncate">{b.address.split('@')[0]}</span>

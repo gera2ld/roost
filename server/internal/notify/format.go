@@ -88,7 +88,7 @@ func FormatOne(it Item, publicURL string) (string, *Button) {
 	}
 	var button *Button
 	if it.ThreadID != "" {
-		if u := link(publicURL, "/inbox/"+it.ThreadID); u != "" {
+		if u := link(publicURL, "/mail/"+it.ThreadID); u != "" {
 			button = &Button{Text: "Open", URL: u}
 		}
 	}

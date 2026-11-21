@@ -133,7 +133,7 @@
 
 <div class="mx-auto flex min-h-dvh max-w-3xl flex-col md:border-x">
 	<header class="flex items-center gap-1 border-b p-2">
-		<Button variant="ghost" size="icon" aria-label="Back to mail" href="/inbox">
+		<Button variant="ghost" size="icon" aria-label="Back to mail" href="/mail">
 			<ArrowLeftIcon />
 		</Button>
 		<h1 class="text-base font-semibold">Settings</h1>

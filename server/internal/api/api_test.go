@@ -259,8 +259,35 @@ func TestSearchRejectsBadQueries(t *testing.T) {
 			t.Errorf("search %s = %d %s, want 400", q, rec.Code, rec.Body)
 		}
 	}
-	if rec := e.do("GET", "/api/roost/search?q=", "", true); rec.Code != 200 || strings.TrimSpace(rec.Body.String()) != "[]" {
-		t.Errorf("empty search = %d %s", rec.Code, rec.Body)
+}
+
+func TestSearchListsFolders(t *testing.T) {
+	e := newEnv(t)
+	list := func(q, extra string) []map[string]any {
+		rec := e.do("GET", "/api/roost/search?q="+url.QueryEscape(q)+extra, "", true)
+		var out []map[string]any
+		if err := json.Unmarshal(rec.Body.Bytes(), &out); err != nil {
+			t.Fatalf("search %s: %d %s", q, rec.Code, rec.Body)
+		}
+		return out
+	}
+	if all := list("", ""); len(all) != 2 {
+		t.Fatalf("empty query = %d threads, want all 2", len(all))
+	}
+	if page := list("", "&limit=1"); len(page) != 1 {
+		t.Errorf("limit=1 = %d threads", len(page))
+	}
+	inbox := `[{"field":"in","query":"inbox"}]`
+	if got := list(inbox, ""); len(got) != 2 {
+		t.Fatalf("in:inbox = %v", got)
+	}
+	thread := e.message("plain-1@example.com").GetString("thread")
+	e.do("POST", "/api/roost/threads/"+thread+"/actions", `{"action":"archive"}`, true)
+	if got := list(inbox, ""); len(got) != 1 || got[0]["id"] == thread {
+		t.Errorf("archived thread still in the inbox: %v", got)
+	}
+	if got := list(`[{"field":"in","query":"archive"}]`, ""); len(got) != 1 || got[0]["id"] != thread {
+		t.Errorf("in:archive = %v", got)
 	}
 }
 

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -15,13 +16,15 @@ import (
 
 // Query is one item of a parsed search query, exactly as @gera2ld/filter-query
 // emits it in the web client: a term ({field, query, negate}) or a group
-// ({group, negate}). Top-level items are OR'd, a group's items are AND'd.
-// Field names are not checked by the parser; binding them happens here.
+// ({group, op, negate}). Roost parses with join "and": top-level items are
+// AND'd, as are ( … ) groups; { … } groups (op "or") are OR'd. Field names are
+// not checked by the parser; binding them happens here.
 type Query struct {
 	Field  *string `json:"field"`
 	Query  string  `json:"query"`
 	Negate bool    `json:"negate"`
 	Group  []Query `json:"group"`
+	Op     string  `json:"op"`
 }
 
 // SearchOptions tune SearchThreads. Loc resolves dates such as after:2026-01-02
@@ -55,10 +58,11 @@ const (
 // ftsAll is what a plain term searches: every column of messages_fts.
 var ftsAll = []string{"subject", "from_name", "from_address", "text_body"}
 
-// SearchThreads returns ids of threads with a message matching the query, most
-// recent match first. Every term tests one message (joined with its thread's
-// flags); terms never combine matches from different messages of a thread.
-// Trashed threads are left out unless the query asks for is:trash.
+// SearchThreads returns ids of threads with a message matching the query, the
+// most recently active thread first (as folders list them). Every term tests
+// one message (joined with its thread's flags); terms never combine matches
+// from different messages of a thread. An empty query lists all mail. Trashed
+// threads are left out unless the query asks for is:trash or in:trash.
 func SearchThreads(app core.App, items []Query, opt SearchOptions) ([]string, error) {
 	if opt.Limit <= 0 {
 		opt.Limit = 50
@@ -70,20 +74,28 @@ func SearchThreads(app core.App, items []Query, opt SearchOptions) ([]string, er
 		opt.Now = time.Now()
 	}
 	c := &compiler{params: map[string]any{"limit": opt.Limit}, opt: opt}
-	expr, err := c.items(items, "OR", 0, false)
-	if err != nil || expr == "" {
-		// A query whose every term dropped out still meant to filter: matching
-		// nothing is right, matching everything would silently widen it.
+	expr, err := c.items(items, "AND", 0, false)
+	if err != nil {
 		return nil, err
 	}
-	where := expr
+	var where []string
+	if expr != "" {
+		where = append(where,
+			"EXISTS (SELECT 1 FROM messages m WHERE m.thread = t.id AND "+expr+")")
+	} else if len(items) > 0 {
+		// A query whose every term dropped out still meant to filter: matching
+		// nothing is right, matching everything would silently widen it.
+		return nil, nil
+	}
 	if !c.wantsTrash {
-		where += " AND COALESCE(t.trashed_at, '') = ''"
+		where = append(where, "COALESCE(t.trashed_at, '') = ''")
+	}
+	sql := "SELECT t.id FROM threads t"
+	if len(where) > 0 {
+		sql += " WHERE " + strings.Join(where, " AND ")
 	}
 	var ids []string
-	err = app.DB().NewQuery(
-		"SELECT m.thread FROM messages m JOIN threads t ON t.id = m.thread WHERE " + where +
-			" GROUP BY m.thread ORDER BY MAX(m.received_at) DESC LIMIT {:limit}").
+	err = app.DB().NewQuery(sql + " ORDER BY t.latest_at DESC LIMIT {:limit}").
 		Bind(c.params).Column(&ids)
 	return ids, err
 }
@@ -120,7 +132,11 @@ func (c *compiler) items(items []Query, op string, depth int, negated bool) (str
 		var s string
 		var err error
 		if it.Group != nil {
-			s, err = c.items(it.Group, "AND", depth+1, neg)
+			groupOp := "AND"
+			if it.Op == "or" {
+				groupOp = "OR"
+			}
+			s, err = c.items(it.Group, groupOp, depth+1, neg)
 		} else {
 			s, err = c.term(it, neg)
 		}
@@ -168,7 +184,11 @@ func (c *compiler) term(it Query, negated bool) (string, error) {
 			`json_extract(j.value, '$.address') LIKE %s OR json_extract(j.value, '$.name') LIKE %s))`,
 			jsonArray(`m."`+field+`"`), p, p), nil
 	case "mailbox":
-		return "(m.mailbox LIKE " + c.like(value) + ")", nil
+		// The exact address, or "shop@" for that local part on any domain.
+		if strings.HasSuffix(value, "@") {
+			return "(m.mailbox LIKE " + c.param(likeEscaper.Replace(value)+"%") + ` ESCAPE '\')`, nil
+		}
+		return "(m.mailbox = " + c.param(value) + " COLLATE NOCASE)", nil
 	case "domain":
 		return "(m.mailbox_domain = " + c.param(strings.TrimPrefix(value, "@")) + " COLLATE NOCASE)", nil
 	case "filename":
@@ -182,7 +202,9 @@ func (c *compiler) term(it Query, negated bool) (string, error) {
 		}
 		return "", badQuery("unknown has: value %q (try has:attachment)", value)
 	case "is":
-		return c.is(strings.ToLower(value), negated)
+		return c.flag(isValues, "is", strings.ToLower(value), negated)
+	case "in":
+		return c.flag(inValues, "in", strings.ToLower(value), negated)
 	case "label":
 		return fmt.Sprintf("(EXISTS (SELECT 1 FROM json_each(%s) j JOIN labels l ON l.id = j.value "+
 			"WHERE l.name = %s COLLATE NOCASE))", jsonArray("m.labels"), c.param(value)), nil
@@ -212,10 +234,24 @@ var isValues = map[string]string{
 	"bounced":  "m.delivery_status = 'bounced'",
 }
 
-func (c *compiler) is(value string, negated bool) (string, error) {
-	sql, ok := isValues[value]
+// inValues are the sidebar folders; in:starred and is:starred are the same.
+var inValues = map[string]string{
+	"inbox":   "m.direction = 'inbound' AND t.is_archived = 0",
+	"starred": isValues["starred"],
+	"sent":    isValues["sent"],
+	"archive": isValues["archived"],
+	"trash":   isValues["trash"],
+}
+
+func (c *compiler) flag(values map[string]string, field, value string, negated bool) (string, error) {
+	sql, ok := values[value]
 	if !ok {
-		return "", badQuery("unknown is: value %q (try unread, read, starred, sent, archived, trash, bounced)", value)
+		names := make([]string, 0, len(values))
+		for name := range values {
+			names = append(names, name)
+		}
+		slices.Sort(names)
+		return "", badQuery("unknown %s: value %q (try %s)", field, value, strings.Join(names, ", "))
 	}
 	if value == "trash" && !negated {
 		c.wantsTrash = true

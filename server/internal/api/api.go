@@ -12,6 +12,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -148,12 +149,16 @@ func (h *handlers) messageAction(e *core.RequestEvent) error {
 	return e.JSON(http.StatusOK, msg)
 }
 
-const maxSearchThreads = 50
+const (
+	defaultSearchThreads = 50
+	maxSearchThreads     = 1000
+)
 
-// search returns threads (not trashed, unless asked) containing messages that
-// match q, most recent match first. q is the JSON tree that
-// @gera2ld/filter-query parses from the search box; tz is the user's zone,
-// for dates such as after:2026-01-02.
+// search lists threads for the mail view: every folder and mailbox in the
+// sidebar is a query too. q is the JSON tree that @gera2ld/filter-query parses
+// from the search box (top level AND'd); an empty q lists all mail. tz is the
+// user's zone, for dates such as after:2026-01-02; limit pages the list
+// (newest thread first), so a full page means there may be more.
 func (h *handlers) search(e *core.RequestEvent) error {
 	params := e.Request.URL.Query()
 	var items []store.Query
@@ -162,14 +167,15 @@ func (h *handlers) search(e *core.RequestEvent) error {
 			return e.BadRequestError("q must be a parsed query", nil)
 		}
 	}
-	if len(items) == 0 {
-		return e.JSON(http.StatusOK, []any{})
-	}
 	loc, err := time.LoadLocation(params.Get("tz"))
 	if err != nil {
 		loc = time.UTC
 	}
-	ids, err := store.SearchThreads(e.App, items, store.SearchOptions{Limit: maxSearchThreads, Loc: loc})
+	limit := defaultSearchThreads
+	if n, err := strconv.Atoi(params.Get("limit")); err == nil && n > 0 {
+		limit = min(n, maxSearchThreads)
+	}
+	ids, err := store.SearchThreads(e.App, items, store.SearchOptions{Limit: limit, Loc: loc})
 	if store.IsQueryError(err) {
 		return e.BadRequestError(err.Error(), nil)
 	}

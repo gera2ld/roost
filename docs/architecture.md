@@ -44,7 +44,7 @@ Ingest is idempotent. A key already stored is skipped, and the same Message-ID d
 
 ## Storage
 
-- **SQLite** holds only what the app queries: messages (headers, text body, flags), threads, attachment metadata, contacts, domains, identities, labels, the send log and ingest bookkeeping. An FTS5 trigram table backs search. The PWA parses the search box with `@gera2ld/filter-query` and sends the tree to `/api/roost/search`, which binds the field names (`store/query.go`) and returns matching threads.
+- **SQLite** holds only what the app queries: messages (headers, text body, flags), threads, attachment metadata, contacts, domains, identities, labels, the send log and ingest bookkeeping. An FTS5 trigram table backs search. Every mail list is a search: the sidebar's folders and mailboxes are query terms, and the PWA parses the search box with `@gera2ld/filter-query` and sends the tree to `/api/roost/search`, which binds the field names (`store/query.go`) and returns a page of matching threads, newest first. Drafts have their own list.
 - **Raw EML** files never change. Attachments and forwarded content are re-extracted from them on demand, and `roost reparse` rebuilds rows after a parser change.
 - **Schema** is `server/internal/store/schema.json`, applied in full on every start. There are no migrations.
 

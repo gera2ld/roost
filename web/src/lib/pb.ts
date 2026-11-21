@@ -157,9 +157,10 @@ export function sendDraft(id: string) {
 	return pb.send<Message>(`/api/roost/drafts/${encodeURIComponent(id)}/send`, { method: 'POST' });
 }
 
-export function searchThreads(text: string) {
+/** Threads matching a search-box query ("" lists all mail), newest first. */
+export function searchThreads(text: string, limit = 50) {
 	const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-	return pb.send<Thread[]>('/api/roost/search', { query: { q: searchTree(text), tz } });
+	return pb.send<Thread[]>('/api/roost/search', { query: { q: searchTree(text), tz, limit } });
 }
 
 export function listMailboxes() {

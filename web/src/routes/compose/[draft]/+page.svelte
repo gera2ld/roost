@@ -16,6 +16,7 @@
 	import { live } from '#lib/mail/session.svelte.js';
 	import { swapSignature } from '#lib/mail/signature.js';
 	import { fileSize } from '#lib/mail/text.js';
+	import { mailHref } from '#lib/mail/nav.js';
 	import {
 		deleteDraft,
 		listDomains,
@@ -104,7 +105,7 @@
 			]);
 			if (d.direction !== 'outbound' || !['draft', 'failed'].includes(d.send_status)) {
 				// Already sent (e.g. from another tab): show it where it lives.
-				await goto(d.thread ? `/sent/${d.thread}` : '/drafts', { replaceState: true });
+				await goto(d.thread ? mailHref('in:sent', d.thread) : '/drafts', { replaceState: true });
 				return;
 			}
 			domains = doms.filter((x) => x.send_enabled).map((x) => x.domain);
@@ -182,7 +183,7 @@
 			loaded = false; // nothing left to autosave
 			toast.success('Sent');
 			live.bump();
-			await goto(sent.thread ? `/sent/${sent.thread}` : '/sent');
+			await goto(mailHref('in:sent', sent.thread));
 		} catch (err) {
 			failure = errorMessage(err, 'Sending failed');
 			toast.error(failure);
